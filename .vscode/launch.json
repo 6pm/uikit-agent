@@ -1,0 +1,61 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Python: FastAPI (Debug)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": [
+        "main:app",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8000",
+        "--reload"
+      ],
+      "justMyCode": false,
+      "env": {
+        "REDIS_HOST": "localhost"
+      },
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Python: Huey Worker (Debug)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "huey.bin.huey_consumer",
+      "args": [
+        "tasks.huey",
+        "--workers",
+        "2"
+      ],
+      "justMyCode": false,
+      "env": {
+        "REDIS_HOST": "localhost"
+      },
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Python: Current File",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${file}",
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "env": {
+        "REDIS_HOST": "localhost"
+      }
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Python: FastAPI + Huey (Debug Both)",
+      "configurations": [
+        "Python: FastAPI (Debug)",
+        "Python: Huey Worker (Debug)"
+      ],
+      "stopAll": true
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  # Service 1: Redis (only service we need in Docker for local dev)
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - my_network
+
+# Define our internal network
+networks:
+  my_network:
+    driver: bridge

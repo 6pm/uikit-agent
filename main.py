@@ -1,13 +1,21 @@
 """FastAPI REST API for handling background tasks with Huey."""
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from tasks import long_running_task
 
 app = FastAPI()
 
 @app.get("/")
-def read_root():
+def read_root(request: Request):
     """Simple check if API works"""
-    return {"message": "FastAPI works!"}
+
+    print(f"URL: {request.url}")
+    print(f"Headers: {dict(request.headers)}")
+    print(f"Query params: {dict(request.query_params)}")
+    print(f"Client IP: {request.client.host if request.client else 'unknown'}")
+
+    resp = {"message": "FastAPI works!"}
+    return resp
+
 
 @app.post("/create-task/{data}")
 async def create_task(data: str):

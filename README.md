@@ -6,7 +6,90 @@ source .venv/bin/activate # activate and choose local venv in the Cursor
 uv pip install -r requirements.txt
 ```
 
-# Build and Run with Docker
+---
+
+## 🚀 Local Development (Recommended for Debugging)
+
+**Best Practice**: Run FastAPI and Huey locally with hot reload, and only use Docker for Redis. This gives you:
+- ✅ Instant code changes (no Docker rebuilds)
+- ✅ Full debugging support with breakpoints
+- ✅ Faster iteration cycle
+- ✅ Better IDE integration
+
+### Quick Start (Local Development)
+
+1. **Start Redis only** (in Docker):
+   ```sh
+   docker-compose -f docker-compose.dev.yml up -d redis
+   ```
+
+2. **Run everything locally** (FastAPI + Huey with hot reload):
+   ```sh
+   ./run-dev.sh
+   ```
+   This script will:
+   - Check if Redis is running (start it if needed)
+   - Activate your virtual environment
+   - Start FastAPI with `--reload` (auto-reloads on code changes)
+   - Start Huey worker
+   - Run both in parallel
+
+3. **Or run separately** (useful for debugging):
+   ```sh
+   # Terminal 1: FastAPI only
+   ./run-dev-api.sh
+
+   # Terminal 2: Huey worker only
+   ./run-dev-worker.sh
+   ```
+
+### Debugging in VS Code/Cursor
+
+1. **Set breakpoints** in your code (`main.py`, `tasks.py`, etc.)
+
+2. **Start Redis** (if not already running):
+   ```sh
+   docker-compose -f docker-compose.dev.yml up -d redis
+   ```
+
+3. **Open the Run and Debug panel** (Cmd+Shift+D / Ctrl+Shift+D)
+
+4. **Choose a debug configuration**:
+   - `Python: FastAPI (Debug)` - Debug FastAPI only
+   - `Python: Huey Worker (Debug)` - Debug Huey worker only
+   - `Python: FastAPI + Huey (Debug Both)` - Debug both simultaneously
+
+5. **Press F5** to start debugging
+
+6. **Test your API**:
+   ```sh
+   curl -X POST http://localhost:8000/create-task/HelloDebug
+   ```
+
+Your breakpoints will now work! You can step through code, inspect variables, and see the full call stack.
+
+### Environment Variables for Local Development
+
+When running locally, set:
+```sh
+export REDIS_HOST=localhost
+```
+
+The scripts handle this automatically, but if running manually:
+```sh
+REDIS_HOST=localhost uvicorn main:app --reload
+REDIS_HOST=localhost huey_consumer tasks.huey --workers 2
+```
+
+### Hot Reload Benefits
+
+- **FastAPI**: Changes to `main.py` automatically reload (thanks to `--reload` flag)
+- **Huey**: Changes to `tasks.py` require restarting the worker (run `./run-dev-worker.sh` again)
+- **No Docker rebuilds**: Code changes are instant!
+
+---
+
+## 🐳 Build and Run with Docker (Production-like)
 This command will read your docker-compose.yml and start all 3 containers in the background (-d):
 ```sh
 docker-compose up --build -d
@@ -18,70 +101,3 @@ To stop and remove all containers:
 ```sh
 docker-compose down
 ```
-
-----------------------------------------------------
-
-## 1 Check: Are all containers running?
-Bash
-
-docker ps
-You should see something like this (3 containers, status "Up"):
-
-✅ CHECK 1: **All 3 containers are running.**
-----------------------------------------------------
-
-
-## 2 Check: Is Redis working?
-Let's go inside the Redis container and give it a command:
-```sh
-docker exec -it uikit-agent-redis-1 redis-cli PING
-```
-You should get the response:
-PONG
-
- ✅ CHECK 2: Redis is alive and responds "PONG".
-----------------------------------------------------
-
-## 1.2. Check: Is FastAPI working?
-Open your browser and go to http://localhost:8000 Or run in terminal:
-```sh
-curl http://localhost:8000
-```
-
-You should get the response:
-```json
-{"message":"FastAPI works!"}
-```
-----------------------------------------------------
-
-## 3. Check: Is the entire chain working (FastAPI -> Redis -> Huey)?
-Now we will check the entire cycle.
-#### A. Open a second terminal and start monitoring Huey worker logs.
-We won't touch this terminal, just observe:
-```sh
-docker logs uikit-agent-worker-1 --follow
-```
-You will see Huey startup logs. Keep this terminal open.
-
-#### B. Return to the first terminal and send a request to our API to create a task.
-
-```sh
-curl -X POST http://localhost:8000/create-task/HelloDocker
-```
-
-You will instantly get a response:
-
-```json
-{"message":"Task accepted for processing!","task_id":"..."}
-```
-
-#### C. Now look at the second terminal (with Huey logs)
-Almost immediately you will see how Huey "picked up" the task from Redis:
-
-```txt
-[YOUR DATE] INFO:huey:Worker-1:Executing tasks.long_running_task: e33e32fc-d11d-4ba6-86f5-44229718352d
-...after 5 seconds...
-[YOUR DATE] INFO:huey:Worker-1:tasks.long_running_task: e33e32fc-d11d-4ba6-86f5-44229718352d executed in 5.005s
-```
-
-If everything works as described, the entire cycle is working! FastAPI received the request, put it in Redis, and Huey picked it up from Redis and executed it.
