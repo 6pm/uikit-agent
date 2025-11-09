@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+
+  # Service 1: Redis
+  redis:
+    image: redis:7-alpine  # Using official, lightweight Redis image
+    ports:
+      - "6379:6379"  # Expose port so we can check it from outside
+    networks:
+      - my_network
+
+  # Service 2: Our FastAPI API
+  api:
+    build: .  # Build image from Dockerfile in this folder
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 # Command to run
+    ports:
+      - "8000:8000"  # Expose API port
+    environment:
+      - REDIS_HOST=redis  # Pass service name 'redis' to our code
+    depends_on:
+      - redis  # Start API only AFTER Redis starts
+    networks:
+      - my_network
+
+  # Service 3: Our Huey Worker
+  worker:
+    build: .  # Using the SAME image as for API
+    command: huey_consumer tasks.huey --workers 2 # Command to run WORKER
+    environment:
+      - REDIS_HOST=redis  # Worker also needs access to Redis
+    depends_on:
+      - redis  # Start worker only AFTER Redis starts
+    networks:
+      - my_network
+
+# Define our internal network
+networks:
+  my_network:
+    driver: bridge
