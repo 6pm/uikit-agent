@@ -1,6 +1,6 @@
 """FastAPI REST API for handling background tasks with Huey."""
 from fastapi import FastAPI, Request
-from tasks import long_running_task
+from tasks.testing import long_running_task
 
 app = FastAPI()
 
@@ -13,7 +13,11 @@ def read_root(request: Request):
     print(f"Query params: {dict(request.query_params)}")
     print(f"Client IP: {request.client.host if request.client else 'unknown'}")
 
-    resp = {"message": "FastAPI works!"}
+    task = long_running_task('Test get data')
+
+    print(task)
+
+    resp = {"message": "FastAPI works!", "task_id": task.id}
     return resp
 
 

@@ -1,3 +1,4 @@
+"""Background task definitions for Huey task queue."""
 import time
 import logging
 from config import huey
