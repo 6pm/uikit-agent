@@ -7,6 +7,9 @@ services:
     image: redis:7-alpine  # Using official, lightweight Redis image
     ports:
       - "6379:6379"  # Expose port so we can check it from outside
+    volumes:
+      - redis_data:/data  # Persist Redis data between container restarts
+    command: redis-server --appendonly yes  # Enable AOF persistence for better durability
     networks:
       - my_network
 
@@ -38,3 +41,8 @@ services:
 networks:
   my_network:
     driver: bridge
+
+# Define volumes for data persistence
+volumes:
+  redis_data:
+    driver: local
