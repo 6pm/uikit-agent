@@ -1,7 +1,11 @@
 """Configuration module for Huey task queue with Redis backend."""
 import os
 import logging
+from dotenv import load_dotenv
 from huey import RedisHuey
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Docker Compose will create a service named 'redis'
 # We get this name from the environment variable,
