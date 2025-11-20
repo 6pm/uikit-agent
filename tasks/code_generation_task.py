@@ -3,11 +3,13 @@ Task for generating code
 """
 
 import logging
-from typing import Dict, Any
-from config import huey
+from typing import Any, Dict
+
 from agents.code_generator_agent import CodeGeneratorAgent
+from config import huey
 
 logger = logging.getLogger(__name__)
+
 
 @huey.task()
 def code_generation_task(request_data: Dict[str, Any]):
@@ -26,9 +28,6 @@ def code_generation_task(request_data: Dict[str, Any]):
     logger.info("[HUEY WORKER]: Task generate_code_from_figma completed! Result: %s", result)
 
     return result
-
-
-
 
 
 # @huey.task()

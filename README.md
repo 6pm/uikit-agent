@@ -6,6 +6,37 @@ source .venv/bin/activate # activate and choose local venv in the Cursor
 uv pip install -r requirements.txt
 ```
 
+## 📝 Code Formatting
+
+This project uses **Black** and **isort** for automatic code formatting to ensure consistent style across all files.
+
+### Format all files:
+```sh
+./format.sh
+```
+
+Or manually:
+```sh
+source .venv/bin/activate
+black .
+isort .
+```
+
+### Configuration
+- Formatting settings are in `pyproject.toml`
+- Line length: 100 characters
+- Black automatically formats code according to PEP 8
+- isort sorts imports and is configured to be compatible with Black
+
+### Auto-formatting in Cursor/VS Code
+The project includes `.vscode/settings.json` that automatically formats Python files on save using Black and organizes imports with isort.
+
+**Required extensions:**
+- [Black Formatter](https://marketplace.visualstudio.com/items?itemName=ms-python.black-formatter) (official Microsoft extension)
+- [isort](https://marketplace.visualstudio.com/items?itemName=ms-python.isort) (optional, for import sorting)
+
+After installing the extensions, files will automatically format when you save them (Cmd+S / Ctrl+S).
+
 ---
 
 ## 🚀 Local Development (Recommended for Debugging)

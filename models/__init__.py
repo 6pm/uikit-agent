@@ -1,6 +1,7 @@
 """
 Models package - automatically exports all modules from this directory.
 """
+
 import importlib
 import pkgutil
 from pathlib import Path
@@ -15,7 +16,7 @@ for _module_info in pkgutil.iter_modules([str(_package_dir)]):
     _module_name = _module_info.name
 
     # Skip __init__ and __pycache__
-    if _module_name.startswith('_'):
+    if _module_name.startswith("_"):
         continue
 
     try:
@@ -30,5 +31,6 @@ for _module_info in pkgutil.iter_modules([str(_package_dir)]):
     except (ImportError, AttributeError, SyntaxError) as e:
         # Log but don't fail if a module can't be imported
         import logging
+
         logger = logging.getLogger(__name__)
         logger.warning("Failed to import module %s: %s", _module_name, e)

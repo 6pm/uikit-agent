@@ -1,31 +1,33 @@
 """FastAPI REST API for handling background tasks with Huey."""
+
 import logging
-from fastapi import FastAPI, Request, HTTPException
-from tasks.testing import long_running_task
-from tasks.code_generation_task import code_generation_task
+
+from fastapi import FastAPI, HTTPException, Request
+
 from models.request_models import CodeGenerationRequest
+from tasks.code_generation_task import code_generation_task
+from tasks.testing import long_running_task
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="UIKit Agent API",
     description="API for generating code from Figma components using LangGraph",
-    version="0.0.1"
+    version="0.0.1",
 )
 
 
 @app.get("/")
 def read_root(request: Request):
     """Simple check if API works"""
-    client_host = request.client.host if request.client else 'unknown'
+    client_host = request.client.host if request.client else "unknown"
     logger.info("Health check from %s", client_host)
 
-    task = long_running_task('Test get data')
+    task = long_running_task("Test get data")
 
     resp = {"message": "FastAPI works!", "task_id": task.id}  # type: ignore
     return resp
@@ -47,7 +49,9 @@ async def generate_code(request: CodeGenerationRequest):
     Returns:
         Task ID and status
     """
-    logger.info("[FASTAPI]: Received code generation request with %d components", len(request.request))
+    logger.info(
+        "[FASTAPI]: Received code generation request with %d components", len(request.request)
+    )
 
     try:
         # BEST PRACTICE: Convert Pydantic model to dict before passing to Huey
@@ -64,7 +68,7 @@ async def generate_code(request: CodeGenerationRequest):
             "message": "Code generation task accepted",
             "task_id": task_id,
             "status": "queued",
-            "components_count": "it just test field"
+            "components_count": "it just test field",
         }
 
     except Exception as e:
