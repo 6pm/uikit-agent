@@ -1,30 +1,26 @@
 """
-Huey task TODO
-
-B
+Task for generating code
 """
+
 import logging
-import time
-# from typing import Dict, Any
+from typing import Dict, Any
 from config import huey
-# from agents.code_generator import CodeGeneratorAgent
+from agents.code_generator_agent import CodeGeneratorAgent
 
 logger = logging.getLogger(__name__)
 
 @huey.task()
-def generate_code_from_figma(json: str):
+def code_generation_task(request_data: Dict[str, Any]):
     """
-BEST PRACTICES:
-1. Keep tasks thin - delegate to agent class
-2. Handle serialization properly (JSON-serializable data only)
-3. Log everything for debugging
-4. Return structured results
+    BEST PRACTICES:
+    1. Handle serialization properly (JSON-serializable data only)
+    2. Log everything for debugging
+    3. Return structured results
     """
-    # Use logger.info instead of print
 
-    time.sleep(5) # Simulate 5 seconds of work
-
-    result = "generate_code_from_figma: RESULT AAAA"
+    # Execute generation
+    agent = CodeGeneratorAgent()
+    result = agent.generate(request_data)
 
     #  Log our result!
     logger.info("[HUEY WORKER]: Task generate_code_from_figma completed! Result: %s", result)
@@ -32,16 +28,13 @@ BEST PRACTICES:
     return result
 
 
+
+
+
 # @huey.task()
 # def generate_code_from_figma(request_data: Dict[str, Any]) -> Dict[str, Any]:
 #     """
 #     Background task for generating code from Figma components.
-
-#     BEST PRACTICE: Task should be a thin wrapper around business logic.
-#     This allows:
-#     - Easy testing (test agent separately)
-#     - Reuse (agent can be called directly if needed)
-#     - Clear separation of concerns
 
 #     Args:
 #         request_data: Dictionary containing:

@@ -2,8 +2,8 @@
 import logging
 from fastapi import FastAPI, Request, HTTPException
 from tasks.testing import long_running_task
-# from tasks.code_generation import generate_code_from_figma
-# from models.figma import FigmaRequest
+from tasks.code_generation_task import code_generation_task
+from models.request_models import CodeGenerationRequest
 
 # Configure logging
 logging.basicConfig(
@@ -31,6 +31,47 @@ def read_root(request: Request):
     return resp
 
 
+@app.post("/generate-code", response_model=dict)
+async def generate_code(request: CodeGenerationRequest):
+    """
+    Generate code from Figma components.
+
+    BEST PRACTICE:
+    - Validate input with Pydantic models
+    - Return task ID immediately (async pattern)
+    - Process in background with Huey
+
+    Args:
+        request: Validated request with components and generation options
+
+    Returns:
+        Task ID and status
+    """
+    logger.info("[FASTAPI]: Received code generation request with %d components", len(request.request))
+
+    try:
+        # BEST PRACTICE: Convert Pydantic model to dict before passing to Huey
+        # Huey can't serialize Pydantic models directly
+        request_dict = request.model_dump()
+
+        # BEST PRACTICE: Queue task immediately, don't wait
+        task = code_generation_task(request_dict)
+
+        task_id = task.id  # type: ignore
+        logger.info("[FASTAPI]: Task queued with ID: %s", task_id)
+
+        return {
+            "message": "Code generation task accepted",
+            "task_id": task_id,
+            "status": "queued",
+            "components_count": "it just test field"
+        }
+
+    except Exception as e:
+        logger.error("[FASTAPI]: Error queuing task: %s", str(e), exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to queue task: {str(e)}") from e
+
+
 # @app.post("/create-task/{data}")
 # async def create_task(data: str):
 #     """
@@ -48,54 +89,6 @@ def read_root(request: Request):
 #         "message": "Task accepted for processing!",
 #         "task_id": task.id  # type: ignore
 #     }
-
-
-# @app.post("/generate-code", response_model=dict)
-# async def generate_code(request: FigmaRequest):
-#     """
-#     Generate code from Figma components.
-
-#     BEST PRACTICE:
-#     - Validate input with Pydantic models
-#     - Return task ID immediately (async pattern)
-#     - Process in background with Huey
-
-#     Args:
-#         request: FigmaRequest with components and generation options
-
-#     Returns:
-#         Task ID and status
-#     """
-#     components_count = len(request.components)
-#     logger.info("[FASTAPI]: Received code generation request for %d components", components_count)
-
-#     try:
-#         # BEST PRACTICE: Convert Pydantic models to dict for serialization
-#         # Huey/Redis can't serialize Pydantic models directly
-#         request_dict = {
-#             "figma_components": [comp.model_dump() for comp in request.components],
-#             "target_framework": request.target_framework,
-#             "output_format": request.output_format,
-#             "style_approach": request.style_approach
-#         }
-
-#         # BEST PRACTICE: Queue task immediately, don't wait
-#         task = generate_code_from_figma(request_dict)
-
-#         task_id = task.id  # type: ignore
-#         logger.info("[FASTAPI]: Task queued with ID: %s", task_id)
-
-#         return {
-#             "message": "Code generation task accepted",
-#             "task_id": task_id,
-#             "status": "queued",
-#             "components_count": components_count
-#         }
-
-#     except Exception as e:
-#         logger.error("[FASTAPI]: Error queuing task: %s", str(e), exc_info=True)
-#         raise HTTPException(status_code=500, detail=f"Failed to queue task: {str(e)}") from e
-
 
 # @app.get("/task-status/{task_id}")
 # async def get_task_status(task_id: str):

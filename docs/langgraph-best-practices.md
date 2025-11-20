@@ -435,18 +435,17 @@ class FigmaComponent(BaseModel):
 ### Крок 3: Створення агента (agents/code_generator.py)
 
 ```python
-from langgraph.graph import StateGraph
+from langgraph.graph import StateGraph, MessagesState, START, END
 
-class CodeGeneratorAgent:
-    def __init__(self):
-        self.graph = self._build_graph()
+def mock_llm(state: MessagesState):
+    return {"messages": [{"role": "ai", "content": "hello world"}]}
 
-    def _build_graph(self):
-        workflow = StateGraph(GenerationState)
-        workflow.add_node("analyze", self._analyze_components)
-        workflow.add_node("generate", self._generate_code)
-        workflow.add_edge("analyze", "generate")
-        return workflow.compile()
+codeGenGraph = StateGraph(MessagesState)
+codeGenGraph.add_node(mock_llm)
+codeGenGraph.add_edge(START, "mock_llm")
+codeGenGraph.add_edge("mock_llm", END)
+codeGenGraph = codeGenGraph.compile()
+
 ```
 
 ### Крок 4: Створення Huey task (tasks/code_generation.py)
@@ -454,7 +453,7 @@ class CodeGeneratorAgent:
 ```python
 @huey.task()
 def generate_code_from_figma(request_data: dict):
-    agent = CodeGeneratorAgent()
+    codeGenGraph.invoke({"messages": [{"role": "user", "content": "hi!"}]})
     return agent.generate(request_data)
 ```
 
@@ -480,7 +479,7 @@ async def generate_code(request: FigmaRequest):
 curl -X POST http://localhost:8000/generate-code \
   -H "Content-Type: application/json" \
   -d '{
-    "components": [
+    "request": [
       {
         "component_id": "comp_123",
         "name": "PrimaryButton",
@@ -493,7 +492,6 @@ curl -X POST http://localhost:8000/generate-code \
       }
     ],
     "target_framework": "react",
-    "output_format": "tsx",
     "style_approach": "tailwind"
   }'
 ```
