@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # Service 1: Redis (only service we need in Docker for local dev)
   redis:

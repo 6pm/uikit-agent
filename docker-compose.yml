@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
 
   # Service 1: Redis
@@ -12,6 +10,12 @@ services:
     command: redis-server --appendonly yes  # Enable AOF persistence for better durability
     networks:
       - my_network
+    # Додаємо перевірку: чи живий Redis насправді?
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   # Service 2: Our FastAPI API
   api:
@@ -22,7 +26,8 @@ services:
     environment:
       - REDIS_HOST=redis  # Pass service name 'redis' to our code
     depends_on:
-      - redis  # Start API only AFTER Redis starts
+      redis:
+        condition: service_healthy  # Start API only AFTER Redis is healthy
     networks:
       - my_network
 
