@@ -2,10 +2,8 @@
 
 ## Package Manager
 - **ALWAYS use `uv` as the package manager** for this project
-- Use `uv pip install <package>` to install packages
-- Use `uv pip install -e .` to install dependencies from pyproject.toml
+- Use `uv add <package>` to install packages
 - Use `uv venv` to create virtual environments
-- When adding new dependencies, update `pyproject.toml` under `[project.dependencies]` and use `uv pip install <package>` to install
 - Never use `pip`, `pip3`, `poetry`, or other package managers
 
 
@@ -47,11 +45,6 @@
 - Include context in log messages (task IDs, component names, etc.)
 - Use structured logging format: `%(asctime)s - %(name)s - %(levelname)s - %(message)s`
 
-
-## Dependencies
-- When adding new dependencies, always use `uv pip install <package>`
-- Update `pyproject.toml` under `[project.dependencies]` with exact versions when possible
-- Test that new dependencies work with the existing stack
 
 ## Error Handling
 - Use try-except blocks with specific exception types

@@ -7,7 +7,7 @@ set -e
 export REDIS_HOST=localhost
 
 if [ ! -d ".venv" ]; then
-    echo "Virtual environment not found. Run: uv venv && source .venv/bin/activate && uv pip install -e ."
+    echo "Virtual environment not found. Run: uv venv && source .venv/bin/activate && uv sync"
     exit 1
 fi
 
