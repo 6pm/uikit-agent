@@ -2,9 +2,9 @@
 Task for generating code
 """
 
-import asyncio
 import logging
 from typing import Any, Dict
+import uvloop
 
 from agents.code_generator_agent import CodeGeneratorAgent
 from config import huey
@@ -16,16 +16,15 @@ logger = logging.getLogger(__name__)
 def code_generation_task(request_data: Dict[str, Any]):
     """
     BEST PRACTICES:
-    1. Handle serialization properly (JSON-serializable data only)
-    2. Log everything for debugging
-    3. Return structured results
-    4. Always use try-catch for error handling
+    - Handle serialization properly (JSON-serializable data only)
+    - Return structured results
+    - Always use try-catch for error handling
     """
     logger.info("[HUEY WORKER]: Starting code generation task")
 
     try:
         # Huey tasks must be synchronous, but we can run async code inside
-        return asyncio.run(_async_code_generation(request_data))
+        return uvloop.run(_async_code_generation(request_data))
 
     except Exception as e:
         error_msg = f"Code generation task failed: {str(e)}"
@@ -38,7 +37,7 @@ def code_generation_task(request_data: Dict[str, Any]):
 async def _async_code_generation(request_data: Dict[str, Any]) -> Dict[str, Any]:
     """
     Async implementation of code generation.
-    This is called from the sync Huey task using asyncio.run().
+    This is called from the sync Huey task using uvloop.run().
     """
     logger.info("[HUEY WORKER]: Starting code generation task")
     logger.debug("[HUEY WORKER]: Request data: %s", request_data)

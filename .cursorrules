@@ -21,6 +21,7 @@
 - Follow PEP 8 style guidelines
 - Use `TypedDict` for state objects in LangGraph agents
 - Use descriptive variable names and docstrings
+- use uvloop instead of asyncio for better performance
 
 ### FastAPI
 - Use Pydantic models for request/response validation

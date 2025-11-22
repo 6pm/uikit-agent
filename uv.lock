@@ -1201,6 +1201,7 @@ dependencies = [
     { name = "python-dotenv" },
     { name = "redis" },
     { name = "uvicorn", extra = ["standard"] },
+    { name = "uvloop" },
 ]
 
 [package.metadata]
@@ -1221,6 +1222,7 @@ requires-dist = [
     { name = "python-dotenv" },
     { name = "redis" },
     { name = "uvicorn", extras = ["standard"] },
+    { name = "uvloop", specifier = ">=0.22.1" },
 ]
 
 [[package]]
