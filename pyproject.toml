@@ -1,5 +1,33 @@
+[project]
+name = "uikit-agent"
+version = "0.1.0"
+description = "UIKit Agent - AI-powered code generation agent"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "huey[redis]",
+    "redis",
+    "python-dotenv",
+    # LangChain ecosystem
+    "langchain==1.0.8",
+    "langchain-core==1.0.7",
+    "langchain-openai==1.0.3",
+    "langchain-anthropic>=1.1.0",
+    # LangGraph
+    "langgraph==1.0.3",
+    "langgraph-checkpoint==3.0.1",
+    "langgraph-prebuilt==1.0.4",
+    "langgraph-sdk==0.2.9",
+    # LangSmith
+    "langsmith==0.4.43",
+    # Code formatting
+    "black>=24.0.0",
+    "isort>=5.13.0",
+]
+
 [tool.black]
-line-length = 100
+line-length = 120
 target-version = ['py311']
 include = '\.pyi?$'
 extend-exclude = '''

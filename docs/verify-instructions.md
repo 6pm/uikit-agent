@@ -46,7 +46,24 @@ You will see Huey startup logs. Keep this terminal open.
 #### B. Return to the first terminal and send a request to our API to create a task.
 
 ```sh
-curl -X POST http://localhost:8000/create-task/HelloDocker
+curl -X POST http://localhost:8000/generate-code \
+  -H "Content-Type: application/json" \
+  -d '{
+    "request": [
+      {
+        "component_id": "comp_123",
+        "name": "PrimaryButton",
+        "root_node": {
+          "id": "1:23",
+          "name": "Button",
+          "type": "FRAME",
+          "properties": {"width": 120, "height": 40}
+        }
+      }
+    ],
+    "target_framework": "react",
+    "style_approach": "tailwind"
+  }'
 ```
 
 You will instantly get a response:

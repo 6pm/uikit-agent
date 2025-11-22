@@ -6,7 +6,7 @@ from fastapi import FastAPI, HTTPException, Request
 
 from models.request_models import CodeGenerationRequest
 from tasks.code_generation_task import code_generation_task
-from tasks.testing import long_running_task
+from tasks.test_task import long_running_task
 
 # Configure logging
 logging.basicConfig(
@@ -76,23 +76,6 @@ async def generate_code(request: CodeGenerationRequest):
         raise HTTPException(status_code=500, detail=f"Failed to queue task: {str(e)}") from e
 
 
-# @app.post("/create-task/{data}")
-# async def create_task(data: str):
-#     """
-#     This endpoint instantly creates a background task
-#     and returns a response.
-#     """
-#     logger.info("[FASTAPI]: Received request to create task. Data: %s", data)
-
-#     # Instantly send task to queue (Redis)
-#     # Huey will handle executing it in the background
-#     task = long_running_task(data)
-
-#     # Instantly return Task ID (though we don't use it)
-#     return {
-#         "message": "Task accepted for processing!",
-#         "task_id": task.id  # type: ignore
-#     }
 
 # @app.get("/task-status/{task_id}")
 # async def get_task_status(task_id: str):

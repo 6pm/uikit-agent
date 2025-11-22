@@ -3,7 +3,13 @@
 ```sh
 uv venv # create new env
 source .venv/bin/activate # activate and choose local venv in the Cursor
-uv pip install -r requirements.txt
+
+uv sync          # встановить залежності з pyproject.toml
+```
+
+## Install dependencies
+```sh
+uv add  PACKAGE-NAME
 ```
 
 ## 📝 Code Formatting
@@ -23,8 +29,7 @@ isort .
 ```
 
 ### Configuration
-- Formatting settings are in `pyproject.toml`
-- Line length: 100 characters
+- Formatting(linting) settings are in `pyproject.toml`
 - Black automatically formats code according to PEP 8
 - isort sorts imports and is configured to be compatible with Black
 
@@ -94,7 +99,26 @@ After installing the extensions, files will automatically format when you save t
 
 6. **Test your API**:
    ```sh
-   curl -X POST http://localhost:8000/create-task/HelloDebug
+   curl -X GET http://localhost:8000
+
+   curl -X POST http://localhost:8000/generate-code \
+  -H "Content-Type: application/json" \
+  -d '{
+    "request": [
+      {
+        "component_id": "comp_123",
+        "name": "PrimaryButton",
+        "root_node": {
+          "id": "1:23",
+          "name": "Button",
+          "type": "FRAME",
+          "properties": {"width": 120, "height": 40}
+        }
+      }
+    ],
+    "target_framework": "react",
+    "style_approach": "tailwind"
+  }'
    ```
 
 Your breakpoints will now work! You can step through code, inspect variables, and see the full call stack.

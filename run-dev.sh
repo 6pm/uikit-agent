@@ -28,7 +28,7 @@ if [ ! -d ".venv" ]; then
     echo -e "${YELLOW}Virtual environment not found. Creating one...${NC}"
     uv venv
     source .venv/bin/activate
-    uv pip install -r requirements.txt
+    uv pip install -e .
 else
     source .venv/bin/activate
 fi
