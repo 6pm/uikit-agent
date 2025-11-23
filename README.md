@@ -212,9 +212,10 @@ uikit-agent/
 ## Technology Stack
 
 - **FastAPI** - REST API framework
-- **Huey + Redis** - Background task queue
+- **Huey + Redis** - Background task queue + rate limiting for heavy queries
 - **LangGraph** - Multi-stage AI agent workflows
 - **LangChain** - LLM integration (OpenAI/Anthropic)
+- **LangSmith** - Detailed logs for each agent call
 - **Pydantic** - Data validation and type safety
 - **Ruff** - Code formatting and linting
 - **uv** - Fast Python package manager

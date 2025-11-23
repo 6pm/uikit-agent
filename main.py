@@ -1,9 +1,14 @@
 """FastAPI REST API for handling background tasks with Huey."""
 
 import logging
+from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException, Request
+import redis.asyncio as redis
+from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi_limiter import FastAPILimiter
+from fastapi_limiter.depends import RateLimiter
 
+from config import REDIS_HOST
 from schemas.api.code_generation_types import CodeGenerationRequest, CodeGenerationResponse
 from tasks.code_generation_task import code_generation_task
 from tasks.test_task import long_running_task
@@ -12,10 +17,23 @@ from tasks.test_task import long_running_task
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    # Connect to Redis for rate limiting
+    # We use the same Redis host as Huey
+    redis_connection = redis.from_url(f"redis://{REDIS_HOST}:6379", encoding="utf-8", decode_responses=True)
+    await FastAPILimiter.init(redis_connection)
+    logger.info("FastAPILimiter initialized with Redis at %s", REDIS_HOST)
+    yield
+    await redis_connection.close()
+
+
 app = FastAPI(
     title="UIKit Agent API",
     description="API for generating code from Figma components using LangGraph",
     version="0.0.1",
+    lifespan=lifespan,
 )
 
 
@@ -31,7 +49,11 @@ def read_root(request: Request):
     return resp
 
 
-@app.post("/generate-code", response_model=CodeGenerationResponse)
+@app.post(
+    "/generate-code",
+    response_model=CodeGenerationResponse,
+    dependencies=[Depends(RateLimiter(times=5, seconds=1))],
+)
 async def generate_code(request: CodeGenerationRequest):
     """
     Generate code from Figma components.
