@@ -1,6 +1,4 @@
-from typing import List
 from pydantic import BaseModel
-
 
 
 class RootNodeProperties(BaseModel):
@@ -22,7 +20,7 @@ class ComponentRequest(BaseModel):
 
 
 class CodeGenerationRequest(BaseModel):
-    request: List[ComponentRequest]
+    request: list[ComponentRequest]
     target_framework: str
     style_approach: str
 

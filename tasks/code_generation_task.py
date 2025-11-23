@@ -2,13 +2,13 @@
 Task for generating code
 """
 
-import logging
 import asyncio
+import logging
 
 from agents.code_generator_agent import CodeGeneratorAgent
+from config import huey
 from schemas.ai_models.test_ai_response import TestAIResponse
 from schemas.api.code_generation_types import CodeGenerationRequest
-from config import huey
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ def code_generation_task(request_data: dict):
         request_data_typed = CodeGenerationRequest(**request_data)
     except Exception as e:
         print(f"Re-hydration code_generation_task: Critical data error: {e}")
-        return # Або логуємо і виходимо, бо дані биті
+        return  # Або логуємо і виходимо, бо дані биті
 
     try:
         # Huey tasks must be synchronous, but we can run async code inside

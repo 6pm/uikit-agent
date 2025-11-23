@@ -1,4 +1,3 @@
-from typing import List
 from pydantic import BaseModel
 
 
@@ -8,4 +7,4 @@ class Message(BaseModel):
 
 
 class TestAIResponse(BaseModel):
-    messages: List[Message]
+    messages: list[Message]

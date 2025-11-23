@@ -1,8 +1,9 @@
 """Configuration module for Huey task queue with Redis backend."""
 
+import asyncio
 import logging
 import os
-import asyncio
+
 import uvloop
 from dotenv import load_dotenv
 from huey import RedisHuey
@@ -20,14 +21,14 @@ REDIS_HOST = os.environ.get("REDIS_HOST", "redis")
 # Це автоматично зробить логи Huey, твоїх тасок і системних повідомлень кольоровими
 logging.basicConfig(
     level=logging.INFO,
-    format="%(message)s", # Rich сам додає час і рівень, тому тут лишаємо тільки повідомлення
-    datefmt="[%X]",       # Формат часу (тільки години:хвилини:секунди)
+    format="%(message)s",  # Rich сам додає час і рівень, тому тут лишаємо тільки повідомлення
+    datefmt="[%X]",  # Формат часу (тільки години:хвилини:секунди)
     handlers=[
         RichHandler(
-            rich_tracebacks=True, # Гарні кольорові трейсбеки помилок
-            markup=True           # Дозволяє писати "[bold red]Error![/]" у логах
+            rich_tracebacks=True,  # Гарні кольорові трейсбеки помилок
+            markup=True,  # Дозволяє писати "[bold red]Error![/]" у логах
         )
-    ]
+    ],
 )
 
 # Create Huey instance with logging enabled
