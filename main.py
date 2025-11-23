@@ -9,9 +9,7 @@ from tasks.code_generation_task import code_generation_task
 from tasks.test_task import long_running_task
 
 # Configure logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 app = FastAPI(
@@ -49,9 +47,7 @@ async def generate_code(request: CodeGenerationRequest):
     Returns:
         Task ID and status
     """
-    logger.info(
-        "[FASTAPI]: Received code generation request with %d components", len(request.request)
-    )
+    logger.info("[FASTAPI]: Received code generation request with %d components", len(request.request))
 
     try:
         # BEST PRACTICE: Convert Pydantic model to dict before passing to Huey
@@ -74,7 +70,6 @@ async def generate_code(request: CodeGenerationRequest):
     except Exception as e:
         logger.error("[FASTAPI]: Error queuing task: %s", str(e), exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to queue task: {str(e)}") from e
-
 
 
 # @app.get("/task-status/{task_id}")

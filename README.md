@@ -10,37 +10,32 @@ uv sync          # встановить залежності з pyproject.toml
 ## Install dependencies
 ```sh
 uv add  PACKAGE-NAME
+
+# clean cache
+uv cache clean
 ```
 
-## 📝 Code Formatting
 
-This project uses **Black** and **isort** for automatic code formatting to ensure consistent style across all files.
+## 📝 Code Formatting
+Formatting(linting) settings are in `pyproject.toml`
+This project uses **Ruff** for automatic code formatting to ensure consistent style across all files.
 
 ### Format all files:
 ```sh
-./format.sh
+uv run ruff format .
+
+#
+uv run ruff check --fix .
 ```
 
-Or manually:
-```sh
-source .venv/bin/activate
-black .
-isort .
-```
-
-### Configuration
-- Formatting(linting) settings are in `pyproject.toml`
-- Black automatically formats code according to PEP 8
-- isort sorts imports and is configured to be compatible with Black
 
 ### Auto-formatting in Cursor/VS Code
-The project includes `.vscode/settings.json` that automatically formats Python files on save using Black and organizes imports with isort.
+The project includes `.vscode/settings.json` that automatically formats Python files on save using Ruff.
 
 **Required extensions:**
-- [Black Formatter](https://marketplace.visualstudio.com/items?itemName=ms-python.black-formatter) (official Microsoft extension)
-- [isort](https://marketplace.visualstudio.com/items?itemName=ms-python.isort) (optional, for import sorting)
+- [ruff](https://marketplace.cursorapi.com/items/?itemName=charliermarsh.ruff) (for code linting and formatting)
 
-After installing the extensions, files will automatically format when you save them (Cmd+S / Ctrl+S).
+After installing the extension, files will automatically format when you save them (Cmd+S / Ctrl+S).
 
 ---
 

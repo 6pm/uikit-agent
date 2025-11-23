@@ -1,9 +1,18 @@
 {
     "[python]": {
-        "editor.formatOnSave": true,
-        "editor.defaultFormatter": "ms-python.black-formatter",
-        "editor.codeActionsOnSave": {
-            "source.organizeImports": "explicit"
-        }
+    // Specify Ruff as the main formatter
+    "editor.defaultFormatter": "charliermarsh.ruff",
+
+    // Format code on save (arranges spaces, quotes)
+    "editor.formatOnSave": true,
+
+    // Fix errors on save (sorts imports, removes unused variables)
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "explicit",
+      "source.organizeImports": "explicit"
     }
+  },
+
+  // Additional Ruff settings (so it takes config from pyproject.toml)
+  "ruff.importStrategy": "fromEnvironment",
 }
