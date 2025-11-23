@@ -26,6 +26,8 @@ dependencies = [
     "isort>=5.13.0",
     "uvloop>=0.22.1",
     "pydantic>=2.12.4",
+    "pydantic-settings>=2.12.0",
+    "rich>=14.2.0",
 ]
 
 [tool.black]

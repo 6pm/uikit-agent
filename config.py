@@ -2,9 +2,11 @@
 
 import logging
 import os
-
+import asyncio
+import uvloop
 from dotenv import load_dotenv
 from huey import RedisHuey
+from rich.logging import RichHandler
 
 # Load environment variables from .env file
 load_dotenv()
@@ -14,10 +16,26 @@ load_dotenv()
 # or use 'redis' as default.
 REDIS_HOST = os.environ.get("REDIS_HOST", "redis")
 
-# Configure logging for Huey
+# Configure logging for Huey via RichHandler
+# Це автоматично зробить логи Huey, твоїх тасок і системних повідомлень кольоровими
 logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    level=logging.INFO,
+    format="%(message)s", # Rich сам додає час і рівень, тому тут лишаємо тільки повідомлення
+    datefmt="[%X]",       # Формат часу (тільки години:хвилини:секунди)
+    handlers=[
+        RichHandler(
+            rich_tracebacks=True, # Гарні кольорові трейсбеки помилок
+            markup=True           # Дозволяє писати "[bold red]Error![/]" у логах
+        )
+    ]
 )
 
 # Create Huey instance with logging enabled
 huey = RedisHuey("my_app", host=REDIS_HOST, port=6379)
+
+
+@huey.on_startup()
+def patch_asyncio():
+    """Patch asyncio to use uvloop"""
+    print("🚀 Worker starting: Installing uvloop...")
+    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
