@@ -1,14 +1,18 @@
 """
 Agent task which run code generation using LangGraph
 """
-import json
-from schemas.api.code_generation_types import CodeGenerationRequest
-from schemas.ai_models.test_ai_response import TestAIResponse
-from typing import Any, Dict
-import logging
 
+import logging
+from typing import Any
+
+from langchain_core.messages import HumanMessage, SystemMessage
+
+# imports for Gemini model
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.graph import END, START, MessagesState, StateGraph
 
+from schemas.ai_models.test_ai_response import TestAIResponse
+from schemas.api.code_generation_types import CodeGenerationRequest
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +27,7 @@ class CodeGeneratorAgent:
         """Initialize agent with default values."""
 
         self.graph = None
+        self.gemini_model = None
 
     async def _initialize(self):
         """
@@ -33,6 +38,7 @@ class CodeGeneratorAgent:
         # await self._setup_llm()
         # await self._setup_tools()
 
+        await self.init_gemini_model()
         await self.build_graph()
 
     @classmethod
@@ -50,6 +56,33 @@ class CodeGeneratorAgent:
         await instance._initialize()
         return instance
 
+    async def init_gemini_model(self):
+        """
+        Initialize Gemini model
+        """
+
+        self.gemini_model = ChatGoogleGenerativeAI(
+            model="gemini-2.5-flash-lite",
+            temperature=0,  # 0 для кодингу краще (більш детерміновано)
+            max_retries=2,
+        )
+
+    # реальна нода що викликає Gemini модель
+    def call_model(self, state: MessagesState):
+        """
+        Invokes the Gemini model with the current state messages.
+        """
+        messages = state["messages"]
+
+        # Тут можна додати System Message, якщо його немає в історії
+        # Але краще це робити при формуванні запиту (див. нижче)
+
+        logger.info("🤖 Calling Gemini model...")
+        response = self.gemini_model.invoke(messages)
+
+        # LangGraph автоматично додасть це повідомлення до історії (append)
+        return {"messages": [response]}
+
     async def build_graph(self):
         """
         Generate code from Figma JSON
@@ -64,11 +97,16 @@ class CodeGeneratorAgent:
         # Set up Graph Builder with State
         graph_builder = StateGraph(MessagesState)
 
-        # test mock code
-        graph_builder.add_node(mock_llm)
-        graph_builder.add_edge(START, "mock_llm")
-        graph_builder.add_edge("mock_llm", END)
+        # Додаємо реальну ноду
+        # Зверніть увагу: ми передаємо self.call_model, бо це метод класу
+        graph_builder.add_node("generate_code", self.call_model)
+
+        # Будуємо простий потік
+        graph_builder.add_edge(START, "generate_code")
+        graph_builder.add_edge("generate_code", END)
         # end test mock code
+
+        # ------------------------------------------------------------------------------------------------
 
         # # Add nodes
         # graph_builder.add_node("worker", self.worker)
@@ -90,20 +128,28 @@ class CodeGeneratorAgent:
 
         self.graph = graph_builder.compile()
 
-    async def generate_code(self, request_data: CodeGenerationRequest) -> Dict[str, Any]:
+    async def generate_code(self, request_data: CodeGenerationRequest) -> dict[str, Any]:
         """
         Generate code from Figma JSON data.
-
-        Args:
-            json_data: Dictionary containing request data (components, framework, etc.)
-
-        Returns:
-            Dictionary with generation results
         """
-        # BEST PRACTICE: Convert dict to JSON string for LangGraph message content
-        # LangGraph's HumanMessage expects content to be a string or list, not a dict
+        # Конвертуємо запит в JSON-рядок
         message_str = request_data.model_dump_json()
 
-        result = await self.graph.ainvoke({"messages": [{"role": "user", "content": message_str}]})
+        # 5. Формуємо правильний вхідний контекст
+        # Додаємо SystemMessage, щоб задати роль моделі
+        system_prompt = """You are an expert Frontend Developer.
+Your task is to generate clean, production-ready code based on the provided Figma JSON data.
+Do not include conversational filler, output only the code or JSON result."""
 
-        return result
+        inputs = {"messages": [SystemMessage(content=system_prompt), HumanMessage(content=message_str)]}
+
+        # Викликаємо граф
+        result = await self.graph.ainvoke(inputs)
+
+        # result['messages'][-1] буде останньою відповіддю від AI
+        last_message = result["messages"][-1]
+
+        return {
+            "content": last_message.content,
+            # "usage": last_message.usage_metadata # Якщо треба статистика токенів
+        }
