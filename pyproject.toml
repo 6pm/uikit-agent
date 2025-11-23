@@ -38,7 +38,7 @@ dev = [
 ]
 
 [tool.ruff]
-line-length = 150
+line-length = 120
 
 [tool.ruff.lint]
 # Вмикаємо сортування імпортів (I), стиль коду (E, F) та оновлення до нового синтаксису(UP)

@@ -5,7 +5,7 @@ Task for generating code
 import asyncio
 import logging
 
-from agents.code_generator_agent import CodeGeneratorAgent
+from agents.code_generator import CodeGeneratorAgent
 from config import huey
 from schemas.ai_models.test_ai_response import TestAIResponse
 from schemas.api.code_generation_types import CodeGenerationRequest

@@ -194,7 +194,12 @@ docker-compose down
 
 ```
 uikit-agent/
-├── agents/              # LangGraph agent implementations
+├──agents/
+│  └── code_generator/
+│       ├── agent.py          # The main class (CodeGeneratorAgent) - Orchestrator
+│       ├── nodes.py          # The logic (CodeGenNodes) - where the work happens
+│       ├── state.py          # The data schema (State)
+│       └── prompts.py        # System prompts (Strings)
 ├── schemas/             # Pydantic models and type definitions
 │   ├── api/            # API request/response models
 │   └── ai_models/      # AI model response schemas
