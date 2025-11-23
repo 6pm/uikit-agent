@@ -2,7 +2,7 @@
 name = "uikit-agent"
 version = "0.1.0"
 description = "UIKit Agent - AI-powered code generation agent"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 dependencies = [
     "fastapi",
     "uvicorn[standard]",
