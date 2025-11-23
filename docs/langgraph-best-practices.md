@@ -49,7 +49,7 @@ class CodeGeneratorAgent:
 # tasks/code_generation.py - Тонкий шар для Huey
 @huey.task()
 def generate_code_from_figma(request_data: dict):
-    agent = CodeGeneratorAgent()
+    agent = CodeGeneratorAgent.create()
     return agent.generate(request_data)
 
 # main.py - API endpoints
@@ -293,7 +293,7 @@ async def generate_code(request: FigmaRequest):
 
 ```python
 # ❌ АНТИПАТЕРН
-agent = CodeGeneratorAgent()  # Глобальна змінна
+agent = CodeGeneratorAgent.create()  # Глобальна змінна
 
 @huey.task()
 def generate_code_from_figma(request_data: dict):

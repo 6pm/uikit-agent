@@ -4,7 +4,7 @@ import logging
 
 from fastapi import FastAPI, HTTPException, Request
 
-from models.request_models import CodeGenerationRequest
+from schemas.api.code_generation_types import CodeGenerationRequest, CodeGenerationResponse
 from tasks.code_generation_task import code_generation_task
 from tasks.test_task import long_running_task
 
@@ -33,7 +33,7 @@ def read_root(request: Request):
     return resp
 
 
-@app.post("/generate-code", response_model=dict)
+@app.post("/generate-code", response_model=CodeGenerationResponse)
 async def generate_code(request: CodeGenerationRequest):
     """
     Generate code from Figma components.
@@ -61,7 +61,7 @@ async def generate_code(request: CodeGenerationRequest):
         # BEST PRACTICE: Queue task immediately, don't wait
         task = code_generation_task(request_dict)
 
-        task_id = task.id  # type: ignore
+        task_id = task.id
         logger.info("[FASTAPI]: Task queued with ID: %s", task_id)
 
         return {

@@ -3,17 +3,18 @@ Task for generating code
 """
 
 import logging
-from typing import Any, Dict
-import uvloop
+import asyncio
 
 from agents.code_generator_agent import CodeGeneratorAgent
+from schemas.ai_models.test_ai_response import TestAIResponse
+from schemas.api.code_generation_types import CodeGenerationRequest
 from config import huey
 
 logger = logging.getLogger(__name__)
 
 
 @huey.task()
-def code_generation_task(request_data: Dict[str, Any]):
+def code_generation_task(request_data: dict):
     """
     BEST PRACTICES:
     - Handle serialization properly (JSON-serializable data only)
@@ -22,9 +23,16 @@ def code_generation_task(request_data: Dict[str, Any]):
     """
     logger.info("[HUEY WORKER]: Starting code generation task")
 
+    # Re-hydration: Відновлюємо типізовану модель
+    try:
+        request_data_typed = CodeGenerationRequest(**request_data)
+    except Exception as e:
+        print(f"Re-hydration code_generation_task: Critical data error: {e}")
+        return # Або логуємо і виходимо, бо дані биті
+
     try:
         # Huey tasks must be synchronous, but we can run async code inside
-        return uvloop.run(_async_code_generation(request_data))
+        return asyncio.run(_async_code_generation(request_data_typed))
 
     except Exception as e:
         error_msg = f"Code generation task failed: {str(e)}"
@@ -34,17 +42,20 @@ def code_generation_task(request_data: Dict[str, Any]):
         return {"success": False, "errors": [error_msg], "generated_code": None}
 
 
-async def _async_code_generation(request_data: Dict[str, Any]) -> Dict[str, Any]:
+async def _async_code_generation(request_data: CodeGenerationRequest) -> TestAIResponse:
     """
     Async implementation of code generation.
     This is called from the sync Huey task using uvloop.run().
     """
-    logger.info("[HUEY WORKER]: Starting code generation task")
+    logger.info("[HUEY WORKER]: Starting _async_code_generation fnc")
     logger.debug("[HUEY WORKER]: Request data: %s", request_data)
 
     try:
         agent = await CodeGeneratorAgent.create()
-        result = await agent.generate_code(json_data=request_data)
+
+        # print("request_data GGGGGGGGGGGGGGGGGGG", request_data)
+        result = await agent.generate_code(request_data)
+        # result = {"messages": [{"role": "ai", "content": "hello world and AAAAAAAAAA"}]}
 
         # Log our result!
         logger.info("[HUEY WORKER]: Task generate_code_from_figma completed! Result: %s", result)
