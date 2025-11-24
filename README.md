@@ -13,8 +13,9 @@ AI-powered code generation agent for converting Figma components to code using L
 
 ## Prerequisites
 
-- Python 3.11+
+- Python 3.12+
 - [uv](https://github.com/astral-sh/uv) package manager
+- [Just](https://github.com/casey/just) - Install `brew install just`
 - Docker and Docker Compose (for Redis)
 - Redis (via Docker or local installation)
 
@@ -44,48 +45,18 @@ uv cache clean
 ```
 
 ## Local Development
+We have 2 approaches: using VScode/Cursor debugger or running comands in terminal.
 
-**Recommended Approach**: Run FastAPI and Huey locally with hot reload, and use Docker only for Redis. This provides:
-- ✅ Instant code changes (no Docker rebuilds)
-- ✅ Full debugging support with breakpoints
-- ✅ Faster iteration cycle
-- ✅ Better IDE integration
+**Recommended Approach**: Run FastAPI and Huey locally with hot reload, and use Docker only for Redis.
 
-### Quick Start (Local Development)
 
-1. **Start Redis** (in Docker):
-   ```sh
-   docker-compose -f docker-compose.dev.yml up -d redis
-   ```
-
-2. **Run everything locally** (FastAPI + Huey with hot reload):
-   ```sh
-   ./run-dev.sh
-   ```
-
-   This script will:
-   - Check if Redis is running (start it if needed)
-   - Activate your virtual environment
-   - Start FastAPI with `--reload` (auto-reloads on code changes)
-   - Start Huey worker
-   - Run both in parallel
-
-3. **Or run separately** (useful for debugging):
-   ```sh
-   # Terminal 1: FastAPI only
-   ./run-dev-api.sh
-
-   # Terminal 2: Huey worker only
-   ./run-dev-worker.sh
-   ```
-
-### Debugging in VS Code/Cursor
+### Debugging in VS Code/Cursor (Recommended)
 
 1. **Set breakpoints** in your code (`main.py`, `tasks/`, etc.)
 
 2. **Start Redis** (if not already running):
    ```sh
-   docker-compose -f docker-compose.dev.yml up -d redis
+   just dev-redis
    ```
 
 3. **Open the Run and Debug panel** (Cmd+Shift+D / Ctrl+Shift+D)
@@ -123,39 +94,44 @@ uv cache clean
      }'
    ```
 
-Your breakpoints will now work! You can step through code, inspect variables, and see the full call stack.
+   Your breakpoints will now work! You can step through code, inspect variables, and see the full call stack.
+
+
+
+### Using Just
+
+We use `just` to manage development commands.
+
+1. **Start Redis** (required for local dev):
+   ```sh
+   just dev-redis
+   ```
+
+2. **Run FastAPI Server** (in one terminal):
+   ```sh
+   just run
+   ```
+
+3. **Run Worker** (in another terminal):
+   ```sh
+   just worker
+   ```
+
+   FastAPI will reload automatically on code changes. For Huey workers, you may need to restart the worker process if you change task definitions.
+
 
 ### Environment Variables
 
-When running locally, set:
-```sh
-export REDIS_HOST=localhost
-```
-
-The development scripts handle this automatically, but if running manually:
-```sh
-REDIS_HOST=localhost uvicorn main:app --reload
-REDIS_HOST=localhost huey_consumer tasks.huey --workers 2
-```
-
-### Hot Reload
-
-- **FastAPI**: Changes to `main.py` automatically reload (thanks to `--reload` flag)
-- **Huey**: Changes to `tasks/` require restarting the worker (run `./run-dev-worker.sh` again)
-- **No Docker rebuilds**: Code changes are instant!
+When running locally via `just` or VS Code debuggers, environment variables are handled automatically.
+If running manually, ensure `REDIS_HOST=localhost`.
 
 ## Code Formatting
 
-This project uses **Ruff** for automatic code formatting and linting. Configuration is in `pyproject.toml`.
-
-### Format All Files
+This project uses **Ruff** for automatic code formatting and linting.
 
 ```sh
-# Format code
-uv run ruff format .
-
-# Check and fix linting issues
-uv run ruff check --fix .
+# Format code and fix linting issues
+just fix
 ```
 
 ### Auto-formatting in Cursor/VS Code
@@ -173,21 +149,22 @@ For production-like environments, you can run everything in Docker.
 
 ### Build and Run
 
-This command will read your `docker-compose.yml` and start all containers in the background:
-
 ```sh
-docker-compose up --build -d
+just up
 ```
 
-You will see Docker:
-- Loading Redis
-- Building your Python image (using uv)
-- Starting all containers
+This command will build and start all services in the background.
+
+### View Logs
+
+```sh
+just logs
+```
 
 ### Stop Containers
 
 ```sh
-docker-compose down
+docker compose down
 ```
 
 ## Project Structure
@@ -211,6 +188,7 @@ uikit-agent/
 
 ## Technology Stack
 
+- **uv** - Fast Python package manager
 - **FastAPI** - REST API framework
 - **Huey + Redis** - Background task queue + rate limiting for heavy queries
 - **LangGraph** - Multi-stage AI agent workflows
@@ -218,4 +196,4 @@ uikit-agent/
 - **LangSmith** - Detailed logs for each agent call
 - **Pydantic** - Data validation and type safety
 - **Ruff** - Code formatting and linting
-- **uv** - Fast Python package manager
+- **uvloop** - Fastest event loop implementation
