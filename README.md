@@ -131,6 +131,15 @@ We use `just` to manage development commands.
    FastAPI will reload automatically on code changes. For Huey workers, you may need to restart the worker process if you change task definitions.
 
 
+### Working with redis locally
+Install this client:
+```sh
+uv tool install iredis # first time install
+
+# run this command to connect to redis. It's better than default client and has autocomplete
+iredis --url redis://localhost:6379/0
+```
+
 ### Environment Variables
 
 When running locally via `just` or VS Code debuggers, environment variables are handled automatically.

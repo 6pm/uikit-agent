@@ -25,7 +25,7 @@ dev-redis:
 
 # Docker: Connect to Redis CLI in the running container
 logs-redis:
-    docker exec -it uikit-agent-redis-1 redis-cli
+    iredis --url redis://localhost:6379/0
 
 # Docker: Build and start all services
 up:
