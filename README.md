@@ -23,6 +23,17 @@ AI-powered code generation agent for converting Figma components to code using L
 
 ### 1. Initial Setup
 
+Setup HTTPS for local development(first time launch):
+```sh
+brew install mkcert
+mkcert -install
+
+# generate certificates in the root folder
+mkcert localhost 127.0.0.1 ::1 # it generates 2 files: localhost+2.pem, localhost+2-key.pem
+
+```
+
+Setup virtual env using UV package manager(first time launch):
 ```sh
 # Create virtual environment
 uv venv
@@ -71,10 +82,10 @@ We have 2 approaches: using VScode/Cursor debugger or running comands in termina
 6. **Test your API**:
    ```sh
    # Health check
-   curl -X GET http://localhost:8000
+   curl -X GET https://localhost:8000
 
    # Generate code
-   curl -X POST http://localhost:8000/generate-code \
+   curl -X POST https://localhost:8000/generate-code \
      -H "Content-Type: application/json" \
      -d '{
        "request": [

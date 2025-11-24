@@ -23,9 +23,9 @@ PONG
 ----------------------------------------------------
 
 ## 1.2. Check: Is FastAPI working?
-Open your browser and go to http://localhost:8000 Or run in terminal:
+Open your browser and go to https://localhost:8000 Or run in terminal:
 ```sh
-curl http://localhost:8000
+curl https://localhost:8000
 ```
 
 You should get the response:
@@ -46,7 +46,7 @@ You will see Huey startup logs. Keep this terminal open.
 #### B. Return to the first terminal and send a request to our API to create a task.
 
 ```sh
-curl -X POST http://localhost:8000/generate-code \
+curl -X POST https://localhost:8000/generate-code \
   -H "Content-Type: application/json" \
   -d '{
     "request": [

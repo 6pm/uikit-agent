@@ -476,7 +476,7 @@ async def generate_code(request: FigmaRequest):
 ### Приклад 1: Генерація коду з одного компонента
 
 ```bash
-curl -X POST http://localhost:8000/generate-code \
+curl -X POST https://localhost:8000/generate-code \
   -H "Content-Type: application/json" \
   -d '{
     "request": [
@@ -499,7 +499,7 @@ curl -X POST http://localhost:8000/generate-code \
 ### Приклад 2: Перевірка статусу завдання
 
 ```bash
-curl http://localhost:8000/task-status/{task_id}
+curl https://localhost:8000/task-status/{task_id}
 ```
 
 ### Приклад 3: Python клієнт
@@ -508,7 +508,7 @@ curl http://localhost:8000/task-status/{task_id}
 import requests
 
 response = requests.post(
-    "http://localhost:8000/generate-code",
+    "https://localhost:8000/generate-code",
     json={
         "components": [...],
         "target_framework": "react"
@@ -518,7 +518,7 @@ response = requests.post(
 task_id = response.json()["task_id"]
 
 # Перевірка результату
-result = requests.get(f"http://localhost:8000/task-status/{task_id}")
+result = requests.get(f"https://localhost:8000/task-status/{task_id}")
 print(result.json())
 ```
 
