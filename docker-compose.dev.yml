@@ -10,6 +10,18 @@ services:
     networks:
       - my_network
 
+  # Service 2: Redis Insight (GUI for Redis)
+  redis-insight:
+    image: redis/redisinsight:latest
+    ports:
+      - "5540:5540"
+    networks:
+      - my_network
+    depends_on:
+      - redis
+    volumes:
+      - redis_insight_data:/data
+
 # Define our internal network
 networks:
   my_network:
@@ -18,4 +30,6 @@ networks:
 # Define volumes for data persistence
 volumes:
   redis_data:
+    driver: local
+  redis_insight_data:
     driver: local

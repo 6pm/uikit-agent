@@ -21,7 +21,7 @@ fix:
 
 # Docker: Start Redis only (for local development)
 dev-redis:
-    {{docker_cmd}} -f docker-compose.dev.yml up -d redis
+    {{docker_cmd}} -f docker-compose.dev.yml up -d
 
 # Docker: Connect to Redis CLI in the running container
 logs-redis:
