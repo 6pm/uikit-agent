@@ -23,7 +23,14 @@ AI-powered code generation agent for converting Figma components to code using L
 
 ### 1. Initial Setup
 
-Setup HTTPS for local development(first time launch):
+1. Install Docker.
+
+2. Install Just:
+```sh
+brew install just
+```
+
+3. Setup HTTPS for local development(first time launch):
 ```sh
 brew install mkcert
 mkcert -install
@@ -34,7 +41,7 @@ mkcert localhost 127.0.0.1 ::1 # it generates 2 files: localhost+2.pem, localhos
 
 ```
 
-Setup virtual env using UV package manager(first time launch):
+4. Setup virtual env using UV package manager(first time launch):
 ```sh
 # Create virtual environment
 uv venv
@@ -46,8 +53,7 @@ source .venv/bin/activate
 uv sync
 ```
 
-### 2. Install Additional Dependencies
-
+###  Useful commands:
 ```sh
 # Add a new package
 uv add PACKAGE-NAME
