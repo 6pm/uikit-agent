@@ -1,48 +1,89 @@
 services:
 
-  # Service 1: Redis
-  redis:
-    image: redis:7-alpine  # Using official, lightweight Redis image
-    ports:
-      - "6379:6379"  # Expose port so we can check it from outside
-    volumes:
-      - redis_data:/data  # Persist Redis data between container restarts
-    command: redis-server --appendonly yes  # Enable AOF persistence for better durability
+  # Service: Traefik (Reverse Proxy & SSL)
+  traefik:
+    image: traefik:v3.0
+    container_name: traefik
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
     networks:
       - my_network
-    # Додаємо перевірку: чи живий Redis насправді?
+    ports:
+      - "80:80"
+      - "443:443"
+      # - "8080:8080" # Dashboard (enable only if secured or tunneling)
+    environment:
+      - DUCKDNS_TOKEN=${DUCKDNS_TOKEN} # Token from .env file
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik_data:/letsencrypt # Persistent volume for SSL certs
+    command:
+      - "--log.level=INFO"
+      - "--api.dashboard=true"
+      - "--api.insecure=false" # Don't expose dashboard publicly without auth
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      # Entrypoints
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      - "--entrypoints.websecure.address=:443"
+      # Let's Encrypt (HTTP-01 Challenge)
+      - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.myresolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory" # Uncomment for testing to avoid rate limits
+      - "--certificatesresolvers.myresolver.acme.email=${ACME_EMAIL}"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+
+  # Service 1: Redis
+  redis:
+    image: redis:7-alpine
+    restart: always
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - my_network
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 3s
       retries: 5
 
-  # Service 2: Our FastAPI API
+  # Service 2: API
   api:
-    build: .  # Build image from Dockerfile in this folder
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 # Command to run
-    ports:
-      - "8000:8000"  # Expose API port
+    build: .
+    restart: always
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
+    # ports:
+    #   - "8000:8000" # Removed: Accessed via Traefik now
     environment:
-      - REDIS_HOST=redis  # Pass service name 'redis' to our code
+      - REDIS_HOST=redis
     depends_on:
       redis:
-        condition: service_healthy  # Start API only AFTER Redis is healthy
+        condition: service_healthy
     networks:
       - my_network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=Host(`uikit-agent-124.duckdns.org`)"
+      - "traefik.http.routers.api.entrypoints=websecure"
+      - "traefik.http.routers.api.tls.certresolver=myresolver"
+      - "traefik.http.services.api.loadbalancer.server.port=8000"
 
-  # Service 3: Our Huey Worker
+  # Service 3: Worker
   worker:
-    build: .  # Using the SAME image as for FastAPI
-    command: huey_consumer tasks.huey --workers 2 # Command to run WORKER
+    build: .
+    restart: always
+    command: huey_consumer tasks.huey --workers 2
     environment:
-      - REDIS_HOST=redis  # Worker also needs access to Redis
+      - REDIS_HOST=redis
     depends_on:
-      - redis  # Start worker only AFTER Redis starts
+      - redis
     networks:
       - my_network
 
-# Define our internal network
 networks:
   my_network:
     driver: bridge
@@ -50,4 +91,6 @@ networks:
 # Define volumes for data persistence
 volumes:
   redis_data:
+    driver: local
+  traefik_data:
     driver: local
