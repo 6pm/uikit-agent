@@ -33,7 +33,7 @@ services:
 
   # Service 3: Our Huey Worker
   worker:
-    build: .  # Using the SAME image as for API
+    build: .  # Using the SAME image as for FastAPI
     command: huey_consumer tasks.huey --workers 2 # Command to run WORKER
     environment:
       - REDIS_HOST=redis  # Worker also needs access to Redis

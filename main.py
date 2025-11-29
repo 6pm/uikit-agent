@@ -1,6 +1,5 @@
 """FastAPI REST API for handling background tasks with Huey."""
 
-import logging
 from contextlib import asynccontextmanager
 
 import redis.asyncio as redis
@@ -10,12 +9,9 @@ from fastapi_limiter.depends import RateLimiter
 
 from config import REDIS_HOST
 from schemas.api.code_generation_types import CodeGenerationRequest, CodeGenerationResponse
+from src.logger_config import logger
 from tasks.code_generation_task import code_generation_task
 from tasks.test_task import long_running_task
-
-# Configure logging
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
@@ -24,7 +20,7 @@ async def lifespan(_app: FastAPI):
     # We use the same Redis host as Huey
     redis_connection = redis.from_url(f"redis://{REDIS_HOST}:6379", encoding="utf-8", decode_responses=True)
     await FastAPILimiter.init(redis_connection)
-    logger.info("FastAPILimiter initialized with Redis at %s", REDIS_HOST)
+    logger.info("main: FastAPILimiter initialized with Redis at %s", REDIS_HOST)
     yield
     await redis_connection.close()
 
@@ -41,7 +37,7 @@ app = FastAPI(
 def read_root(request: Request):
     """Simple check if API works"""
     client_host = request.client.host if request.client else "unknown"
-    logger.info("Health check from %s", client_host)
+    logger.info("main: Health check from %s", client_host)
 
     task = long_running_task("Test get data")
 
@@ -69,7 +65,7 @@ async def generate_code(request: CodeGenerationRequest):
     Returns:
         Task ID and status
     """
-    logger.info("[FASTAPI]: Received code generation request with %d components", len(request.request))
+    logger.info("main: [FASTAPI]: Received code generation request with %d components", len(request.request))
 
     try:
         # BEST PRACTICE: Convert Pydantic model to dict before passing to Huey
@@ -80,7 +76,7 @@ async def generate_code(request: CodeGenerationRequest):
         task = code_generation_task(request_dict)
 
         task_id = task.id
-        logger.info("[FASTAPI]: Task queued with ID: %s", task_id)
+        logger.info("main: [FASTAPI]: Task queued with ID: %s", task_id)
 
         return {
             "message": "Code generation task accepted",
@@ -90,7 +86,7 @@ async def generate_code(request: CodeGenerationRequest):
         }
 
     except Exception as e:
-        logger.error("[FASTAPI]: Error queuing task: %s", str(e), exc_info=True)
+        logger.error("main: [FASTAPI]: Error queuing task: %s", str(e), exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to queue task: {str(e)}") from e
 
 

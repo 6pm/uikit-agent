@@ -163,9 +163,7 @@ def _analyze_components(self, state: GenerationState):
 
 #### ✅ ПРАВИЛЬНО: Структуроване логування
 ```python
-import logging
-
-logger = logging.getLogger(__name__)
+from src.logger_config import logger
 
 logger.info("Stage 1: Analyzing components")
 logger.debug(f"Request data: {request_data}")

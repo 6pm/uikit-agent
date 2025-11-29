@@ -1,9 +1,8 @@
-import logging
 from typing import Any
 
-from .state import CodeGenState
+from src.logger_config import logger
 
-logger = logging.getLogger(__name__)
+from .state import CodeGenState
 
 
 class CodeGenNodes:
@@ -22,7 +21,7 @@ class CodeGenNodes:
         """
         messages = state["messages"]
 
-        logger.info("🤖 Calling Gemini model...")
+        logger.info("code_generator.nodes: 🤖 Calling Gemini model...")
         response = self.model.invoke(messages)
 
         # LangGraph automatically appends this message to history

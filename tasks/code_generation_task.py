@@ -3,14 +3,12 @@ Task for generating code
 """
 
 import asyncio
-import logging
 
 from agents.code_generator import CodeGeneratorAgent
 from config import huey
 from schemas.ai_models.test_ai_response import TestAIResponse
 from schemas.api.code_generation_types import CodeGenerationRequest
-
-logger = logging.getLogger(__name__)
+from src.logger_config import logger
 
 
 @huey.task()
@@ -21,7 +19,7 @@ def code_generation_task(request_data: dict):
     - Return structured results
     - Always use try-catch for error handling
     """
-    logger.info("[HUEY WORKER]: Starting code generation task")
+    logger.info("code_generation_task: Starting code generation task")
 
     # Re-hydration: Відновлюємо типізовану модель
     try:
@@ -36,7 +34,7 @@ def code_generation_task(request_data: dict):
 
     except Exception as e:
         error_msg = f"Code generation task failed: {str(e)}"
-        logger.error("[HUEY WORKER]: %s", error_msg, exc_info=True)
+        logger.error("code_generation_task: %s", error_msg, exc_info=True)
 
         # BEST PRACTICE: Always return structured error response
         return {"success": False, "errors": [error_msg], "generated_code": None}
@@ -47,8 +45,8 @@ async def _async_code_generation(request_data: CodeGenerationRequest) -> TestAIR
     Async implementation of code generation.
     This is called from the sync Huey task using uvloop.run().
     """
-    logger.info("[HUEY WORKER]: Starting _async_code_generation fnc")
-    logger.debug("[HUEY WORKER]: Request data: %s", request_data)
+    logger.info("code_generation_task: Starting _async_code_generation fnc")
+    logger.debug("code_generation_task: Request data: %s", request_data)
 
     try:
         agent = await CodeGeneratorAgent.create()
@@ -58,13 +56,13 @@ async def _async_code_generation(request_data: CodeGenerationRequest) -> TestAIR
         # result = {"messages": [{"role": "ai", "content": "hello world and AAAAAAAAAA"}]}
 
         # Log our result!
-        logger.info("[HUEY WORKER]: Task generate_code_from_figma completed! Result: %s", result)
+        logger.info("code_generation_task: [HUEY WORKER]: Task generate_code_from_figma completed! Result: %s", result)
 
         return result
 
     except Exception as e:
         error_msg = f"Code generation task failed: {str(e)}"
-        logger.error("[HUEY WORKER]: %s", error_msg, exc_info=True)
+        logger.error("code_generation_task: [HUEY WORKER]: %s", error_msg, exc_info=True)
         return {"success": False, "errors": [error_msg], "generated_code": None}
 
 
@@ -83,8 +81,8 @@ async def _async_code_generation(request_data: CodeGenerationRequest) -> TestAIR
 #     Returns:
 #         Dictionary with generation results
 #     """
-#     logger.info("[HUEY WORKER]: Starting code generation task")
-#     logger.debug(f"[HUEY WORKER]: Request data: {request_data}")
+#     logger.info("code_generation_task: [HUEY WORKER]: Starting code generation task")
+#     logger.debug(f"code_generation_task: [HUEY WORKER]: Request data: {request_data}")
 
 #     try:
 #         # BEST PRACTICE: Initialize agent inside task (not globally)
@@ -94,16 +92,16 @@ async def _async_code_generation(request_data: CodeGenerationRequest) -> TestAIR
 #         # Execute generation
 #         result = agent.generate(request_data)
 
-#         logger.info(f"[HUEY WORKER]: Task completed. Success: {result.get('success', False)}")
+#         logger.info(f"code_generation_task: [HUEY WORKER]: Task completed. Success: {result.get('success', False)}")
 
 #         if result.get("errors"):
-#             logger.warning(f"[HUEY WORKER]: Errors encountered: {result['errors']}")
+#             logger.warning(f"code_generation_task: [HUEY WORKER]: Errors encountered: {result['errors']}")
 
 #         return result
 
 #     except Exception as e:
 #         error_msg = f"Code generation task failed: {str(e)}"
-#         logger.error(f"[HUEY WORKER]: {error_msg}", exc_info=True)
+#         logger.error(f"code_generation_task: [HUEY WORKER]: {error_msg}", exc_info=True)
 
 #         # BEST PRACTICE: Always return structured error response
 #         return {

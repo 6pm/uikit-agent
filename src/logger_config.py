@@ -20,3 +20,7 @@ def setup_logging():
             )
         ],
     )
+
+
+# Export a shared logger instance
+logger = logging.getLogger("uikit_agent")
