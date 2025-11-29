@@ -5,9 +5,9 @@ docker_cmd := "docker compose"
 default:
     @just --list
 
-# Run local server (FastAPI) on HTTPS (requires mkcert generated files: localhost+2.pem and localhost+2-key.pem)
+# Run local server (FastAPI) on HTTPS (requires mkcert generated files: certificates/localhost+2.pem and certificates/localhost+2-key.pem)
 run-https:
-    REDIS_HOST=localhost uv run uvicorn main:app --reload --ssl-keyfile=localhost+2-key.pem --ssl-certfile=localhost+2.pem
+    REDIS_HOST=localhost uv run uvicorn main:app --reload --ssl-keyfile=certificates/localhost+2-key.pem --ssl-certfile=certificates/localhost+2.pem
 
 # Run background task worker (Huey)
 # Using thread worker type (-k thread) to fix multiprocessing issues on macOS

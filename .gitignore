@@ -13,3 +13,4 @@ build/
 
 # SSL certificates
 *.pem
+*.key

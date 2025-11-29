@@ -14,9 +14,9 @@
         "8000",
         "--reload",
         "--ssl-keyfile",
-        "localhost+2-key.pem",
+        "certificates/localhost+2-key.pem",
         "--ssl-certfile",
-        "localhost+2.pem"
+        "certificates/localhost+2.pem"
       ],
       "justMyCode": false,
       "env": {

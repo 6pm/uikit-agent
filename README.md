@@ -28,7 +28,8 @@ Setup HTTPS for local development(first time launch):
 brew install mkcert
 mkcert -install
 
-# generate certificates in the root folder
+# generate certificates in the certificates folder
+cd certificates
 mkcert localhost 127.0.0.1 ::1 # it generates 2 files: localhost+2.pem, localhost+2-key.pem
 
 ```
