@@ -32,7 +32,7 @@ services:
       # Let's Encrypt (HTTP-01 Challenge)
       - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
       - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
-      - "--certificatesresolvers.myresolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory" # Uncomment for testing to avoid rate limits
+      # - "--certificatesresolvers.myresolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory" # Uncomment for testing to avoid rate limits
       - "--certificatesresolvers.myresolver.acme.email=${ACME_EMAIL}"
       - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
 
@@ -67,7 +67,7 @@ services:
       - my_network
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.api.rule=Host(`uikit-agent-124.duckdns.org`)"
+      - "traefik.http.routers.api.rule=Host(`myapp.159.69.248.114.nip.io`)"
       - "traefik.http.routers.api.entrypoints=websecure"
       - "traefik.http.routers.api.tls.certresolver=myresolver"
       - "traefik.http.services.api.loadbalancer.server.port=8000"
