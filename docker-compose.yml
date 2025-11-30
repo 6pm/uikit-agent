@@ -1,6 +1,7 @@
 services:
 
   # Service: Traefik (Reverse Proxy & SSL)
+  # Main entry point: handles automatic HTTPS/SSL, redirects HTTP->HTTPS, and routes traffic to the API service.
   traefik:
     image: traefik:v3.0
     container_name: traefik
@@ -12,9 +13,6 @@ services:
     ports:
       - "80:80"
       - "443:443"
-      # - "8080:8080" # Dashboard (enable only if secured or tunneling)
-    environment:
-      - DUCKDNS_TOKEN=${DUCKDNS_TOKEN} # Token from .env file
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - traefik_data:/letsencrypt # Persistent volume for SSL certs
@@ -67,7 +65,7 @@ services:
       - my_network
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.api.rule=Host(`myapp.159.69.248.114.nip.io`)"
+      - "traefik.http.routers.api.rule=Host(`uikit-agent.${SERVER_IP}.nip.io`) && Headers(`${TRAFEIK_SECRET_HEADER}`, `${TRAFEIK_SECRET_TOKEN}`)"
       - "traefik.http.routers.api.entrypoints=websecure"
       - "traefik.http.routers.api.tls.certresolver=myresolver"
       - "traefik.http.services.api.loadbalancer.server.port=8000"

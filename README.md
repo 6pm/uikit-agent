@@ -225,3 +225,8 @@ uikit-agent/
 - **Pydantic** - Data validation and type safety
 - **Ruff** - Code formatting and linting
 - **uvloop** - Fastest event loop implementation
+
+
+
+## More docs
+[How to deploy this docker container to Hetzner VPS](/docs/prepare-prod-hosting.md)

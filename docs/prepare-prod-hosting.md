@@ -1,67 +1,116 @@
-# Інструкція як задеплоїти цей проект для прода
+# Production Hosting Setup Guide
 
-Ми будемо використовуват Hetzner для хостингу. Треба купити віртуалку там спочатку і отримати всі доступи.
-Але Hetzner дає тільки віртуалку з ІР адресою, але нам треба домен щоб налаштувати https.
-Але щоб не купувати домен ми скористаємося сервісом https://www.duckdns.org. Цей сервіс дозволяє користуватися його сабдоменами щоб отримати SSL сертифікат на саб домен.
+This guide explains how to deploy the UIKit Agent project to a production environment (e.g., Hetzner VPS).
 
+## 1. Domain Configuration (nip.io)
 
-Запускаємо віртуалку на Hetzner і заходимо на неї:
-```sh
-# логінимось з паролем чи ssh ключем
+To simplify deployment without purchasing a custom domain immediately, we use [nip.io](https://nip.io/). This service allows us to map a domain to an IP address automatically, enabling automatic SSL certificate generation via Let's Encrypt (handled by Traefik).
+
+-   **Concept**: The domain format is `uikit-agent.<YOUR_SERVER_IP>.nip.io`.
+-   **Example**: If your server IP is `192.0.2.1`, your domain will be `uikit-agent.192.0.2.1.nip.io`.
+
+Ensure you update your `.env` file with this domain structure later.
+
+## 2. Server Preparation
+
+Connect to your server via SSH:
+
+```bash
 ssh root@<YOUR_SERVER_IP>
-
-# Оновлення пакетів
-apt update && apt upgrade -y
-
-# Встановлення Docker та Docker Compose плагіну
-apt install -y docker.io docker-compose-v2
-
-# встановити uv для python
-curl -LsSf https://astral.sh/uv/install.sh | sh
-
 ```
 
+### System Updates
+Update the package list and upgrade existing packages:
 
-## 2. Налаштування Firewall (UFW)
-Traefik використовує порти 80 та 443.
-```sh
-ufw allow 22/tcp
-ufw allow 80/tcp
-ufw allow 443/tcp
+```bash
+apt update && apt upgrade -y
+```
+
+### Install Docker
+Install Docker Engine and the Docker Compose plugin:
+
+```bash
+apt install -y docker.io docker-compose-v2
+```
+
+### Install uv (Python Package Manager)
+We use `uv` for fast Python package management:
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+## 3. Security Configuration (UFW)
+
+Set up the firewall to allow necessary traffic (SSH, HTTP, HTTPS):
+
+```bash
+ufw allow 22/tcp   # SSH access
+ufw allow 80/tcp   # HTTP (Traefik entrypoint)
+ufw allow 443/tcp  # HTTPS (Traefik entrypoint)
 ufw enable
 ```
 
-## 3. Налаштування проекту
-Створіть папку для проекту:
-```sh
-mkdir /opt/uikit-agent # папка opt має бути вже не сервері, це системна папка
+## 4. Project Setup
+
+### Clone Repository
+Create a directory for the project and clone the code:
+
+```bash
+# Create project directory (using /opt is standard for self-contained apps)
+mkdir -p /opt/uikit-agent
 cd /opt/uikit-agent
+
+# Clone the repository
+git clone https://github.com/6pm/uikit-agent.git .
 ```
 
-Зклонувати проект з Github:
-```sh
-git clone https://github.com/6pm/uikit-agent.git
-```
+### Configure Environment
+Set up the production environment variables:
 
-Добавити .env ключі:
-```sh
-cd /opt/uikit-agent/uikit-agent
+```bash
+# Create .env file from template
+cp .env-template .env
+
+# Edit the configuration
 nano .env
 ```
+**Important**: Inside `.env`, ensure you update the domain related variables to match the `nip.io` pattern (e.g., `DOMAIN=uikit-agent.<YOUR_IP>.nip.io`).
 
-Ставимо всі модулі:
-```sh
+### Install Local Dependencies (Optional)
+If you need to run maintenance scripts or management commands directly on the host machine:
+
+```bash
 # Create virtual environment
 uv venv
 
 # Activate virtual environment
 source .venv/bin/activate
 
-# Install dependencies from pyproject.toml
+# Install dependencies
 uv sync
 ```
 
-# Добавити ip сервера на Hetzner в docker-compose.yml замість цього ip:
-```sh
-- "traefik.http.routers.api.rule=Host(`myapp.159.69.248.114.nip.io`)"
+## 5. Deployment
+
+Build and start the containers using Docker Compose:
+
+```bash
+docker compose up -d --build
 ```
+
+## 6. Verification
+
+Check the status of your containers:
+
+```bash
+docker compose ps
+```
+
+View application logs to ensure everything started correctly:
+
+```bash
+docker compose logs -f
+```
+
+You should now be able to access your application at `https://uikit-agent.<YOUR_SERVER_IP>.nip.io` (depending on your Traefik configuration).
