@@ -15,7 +15,6 @@ WORKDIR /app
 # Build arguments for private NPM registry authentication
 # These values are available only during the build process and not persisted in the final image history
 ARG GCP_NPM_TOKEN
-ARG GCP_NPM_USERNAME
 
 # Enable Python bytecode compilation for faster container startup
 ENV UV_COMPILE_BYTECODE=1
