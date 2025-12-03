@@ -1,34 +1,75 @@
-# Step 1: Base Python image
+# Use official Python slim image for smaller final image size
 FROM python:3.11-slim
 
-# 1. Встановлюємо uv правильно (копіюємо бінарник, це надійніше і швидше за pip install)
+# Copy Node.js binaries and libraries from the official image
+# This is cleaner and lighter than installing via apt-get
+COPY --from=node:22-slim /usr/local/bin /usr/local/bin
+COPY --from=node:22-slim /usr/local/lib/node_modules /usr/local/lib/node_modules
+
+# Install uv package manager by copying the binary from the official image
+# This is faster and more reliable than installing via pip
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
 
 WORKDIR /app
 
-# 2. Вмикаємо компіляцію байт-коду (прискорює старт контейнера)
+# Build arguments for private NPM registry authentication
+# These values are available only during the build process and not persisted in the final image history
+ARG GCP_NPM_TOKEN
+ARG GCP_NPM_USERNAME
+
+# Enable Python bytecode compilation for faster container startup
 ENV UV_COMPILE_BYTECODE=1
 
-# 3. Копіюємо файли залежностей (ОБИДВА файли)
-# Це дозволяє Docker закешувати цей крок, якщо залежності не змінилися
+
+# --------------------------------------------------------------
+# MCP Server Configuration
+# --------------------------------------------------------------
+
+# Copy npm configuration
+COPY .npmrc .
+
+# Configure authentication for private NPM registry
+# Decode the base64 service account key into a temporary file and set credentials path
+RUN echo "$GCP_NPM_TOKEN" | base64 -d > /tmp/key.json
+ENV GOOGLE_APPLICATION_CREDENTIALS=/tmp/key.json
+
+# Authenticate with Google Artifact Registry using the service account credentials
+RUN npx google-artifactregistry-auth
+
+# Install the private MCP server package globally within the container
+RUN npm install @patrianna/uikit
+
+
+# Security: Remove the temporary service account key file
+RUN rm /tmp/key.json
+
+# --------------------------------------------------------------
+
+
+# --------------------------------------------------------------
+# Python application setup
+# --------------------------------------------------------------
+
+# Copy dependency definition files first
+# This allows Docker to cache the dependency installation layer if these files haven't changed
 COPY pyproject.toml uv.lock ./
 
-# 4. Встановлюємо ТІЛЬКИ залежності (без самого коду проекту)
-# --frozen: гарантує використання версій з uv.lock
-# --no-install-project: не намагається встановити наш код (бо його ще немає)
+# Install dependencies only (without the project code)
+# --frozen: ensures usage of exact versions from uv.lock
+# --no-install-project: skips installing the project package itself as source code isn't copied yet
 RUN uv sync --frozen --no-install-project
 
-# 5. Тепер копіюємо весь код
+# Copy the rest of the application source code
 COPY . .
 
-# 6. Довстановлюємо сам проект
+# Install the project itself into the virtual environment
 RUN uv sync --frozen
 
-# 7. ВАЖЛИВО: Додаємо віртуальне оточення в PATH
-# Тепер python і uvicorn будуть автоматично братися з .venv
+# Add the virtual environment to the PATH
+# This ensures python and uvicorn commands run from the isolated environment (.venv)
 ENV PATH="/app/.venv/bin:$PATH"
 
 EXPOSE 8000
 
-# Запуск
+# Start the application using Uvicorn
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

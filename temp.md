@@ -1,5 +1,3 @@
-"@patrianna/uikit": "latest",
-
 {
   "mcpServers": {
     "patrianna-uikit-mcp": {
@@ -8,7 +6,3 @@
     }
   }
 }
-
-
-@patrianna:registry=https://europe-npm.pkg.dev/patrianna-dev/patrianna-packages/
-//europe-npm.pkg.dev/patrianna-dev/patrianna-packages/:always-auth=true

@@ -11,7 +11,19 @@ To simplify deployment without purchasing a custom domain immediately, we use [n
 
 Ensure you update your `.env` file with this domain structure later.
 
-## 2. Server Preparation
+## 2. Private NPM on Google Cloud preparation
+
+Go to **Google Cloud Console -> IAM & Admin -> Service Accounts** and generate a key. It must be a JSON key for authorization.
+
+Generate a base64 string from the JSON key using this command:
+```sh
+cat path/to/new/key.json | base64 | tr -d '\n' | pbcopy
+```
+
+Copy the command output (the base64 string) into the `GCP_NPM_TOKEN` environment variable.
+
+
+## 3. Server Preparation
 
 Connect to your server via SSH:
 
@@ -40,7 +52,7 @@ We use `uv` for fast Python package management:
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-## 3. Security Configuration (UFW)
+## 4. Security Configuration (UFW)
 
 Set up the firewall to allow necessary traffic (SSH, HTTP, HTTPS):
 
@@ -51,7 +63,7 @@ ufw allow 443/tcp  # HTTPS (Traefik entrypoint)
 ufw enable
 ```
 
-## 4. Project Setup
+## 5. Project Setup
 
 ### Clone Repository
 Create a directory for the project and clone the code:
@@ -91,7 +103,7 @@ source .venv/bin/activate
 uv sync
 ```
 
-## 5. Deployment
+## 6. Deployment
 
 Build and start the containers using Docker Compose:
 
@@ -99,7 +111,7 @@ Build and start the containers using Docker Compose:
 docker compose up -d --build
 ```
 
-## 6. Verification
+## 7. Verification
 
 Check the status of your containers:
 
