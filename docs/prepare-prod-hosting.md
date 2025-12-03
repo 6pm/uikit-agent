@@ -66,10 +66,13 @@ ufw enable
 ## 5. Project Setup
 
 ### Clone Repository
-Create a directory for the project and clone the code:
+1. Create a directory for the project and clone the code:
+```sh
+git clone https://github.com/6pm/uikit-agent.git
+```
 
+2. Create project directory (using /opt is standard for self-contained apps)
 ```bash
-# Create project directory (using /opt is standard for self-contained apps)
 mkdir -p /opt/uikit-agent
 cd /opt/uikit-agent
 
