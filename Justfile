@@ -5,6 +5,11 @@ docker_cmd := "docker compose"
 default:
     @just --list
 
+# Install dependencies (Python + NPM)
+install:
+    uv sync
+    npm install
+
 # Run local server (FastAPI) on HTTPS (requires mkcert generated files: certificates/localhost+2.pem and certificates/localhost+2-key.pem)
 run-https:
     REDIS_HOST=localhost uv run uvicorn main:app --reload --ssl-keyfile=certificates/localhost+2-key.pem --ssl-certfile=certificates/localhost+2.pem

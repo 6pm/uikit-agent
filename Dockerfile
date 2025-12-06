@@ -35,8 +35,9 @@ ENV GOOGLE_APPLICATION_CREDENTIALS=/tmp/key.json
 # Authenticate with Google Artifact Registry using the service account credentials
 RUN npx google-artifactregistry-auth
 
-# Install the private MCP server package globally within the container
-RUN npm install @patrianna/uikit
+# Install the private MCP server package using package.json
+COPY package*.json ./
+RUN npm install
 
 
 # Security: Remove the temporary service account key file

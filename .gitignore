@@ -17,3 +17,4 @@ build/
 certificates/*.json
 
 temp.md
+node_modules
