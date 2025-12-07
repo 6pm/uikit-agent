@@ -1,28 +1,11 @@
-from pydantic import BaseModel
-
-
-class RootNodeProperties(BaseModel):
-    width: float
-    height: float
-
-
-class RootNode(BaseModel):
-    id: str
-    name: str
-    type: str
-    properties: RootNodeProperties
-
-
-class ComponentRequest(BaseModel):
-    component_id: str
-    name: str
-    root_node: RootNode
+from pydantic import BaseModel, Json
 
 
 class CodeGenerationRequest(BaseModel):
-    request: list[ComponentRequest]
-    target_framework: str
-    style_approach: str
+    # Support both JSON string (API) and parsed object (Task re-hydration)
+    figmaJson: dict | list | Json
+    componentName: str
+    userPrompt: str | None = None
 
 
 # ----
