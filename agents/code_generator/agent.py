@@ -1,5 +1,3 @@
-import asyncio
-
 from huey.utils import os
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.graph import END, START, StateGraph
@@ -31,35 +29,23 @@ class CodeGeneratorAgent:
         self.mcp_web_client = MCPClient("node_modules/@patrianna/uikit/dist/mcp-server/server.js")
         self.mcp_mobile_client = None
 
-    async def _initialize(self):
+    async def __aenter__(self):
         """
-        Async initialization method.
+        Ініціалізація ресурсів при вході в блок.
         """
-        # connect to MCP servers
-        connect_tasks = [self.mcp_web_client.connect()]
-
+        # 1. Підключаємо MCP клієнти (теж через exit stack або вручну enter)
+        # Тут ми каскадно викликаємо aenter клієнтів
+        await self.mcp_web_client.__aenter__()
         if self.mcp_mobile_client:
-            connect_tasks.append(self.mcp_mobile_client.connect())
+            await self.mcp_mobile_client.__aenter__()
 
-        await asyncio.gather(*connect_tasks, return_exceptions=True)
-
-        if self.mcp_mobile_client:
-            await self.mcp_mobile_client.connect()
-
-        # initialize Gemini model
+        # 2. Ініціалізуємо модель
         await self.init_gemini_model()
 
-        # build graph
+        # 3. Будуємо граф (тепер це безпечно, бо MCP підключені)
         await self.build_graph()
 
-    @classmethod
-    async def create(cls):
-        """
-        Factory method for async initialization.
-        """
-        instance = cls()
-        await instance._initialize()
-        return instance
+        return self
 
     async def init_gemini_model(self):
         """
@@ -140,6 +126,18 @@ class CodeGeneratorAgent:
         self.graph = workflow.compile()
         logger.info("CodeGen Graph built successfully.")
 
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        """
+        Очистка ресурсів.
+        """
+        # Закриваємо клієнти
+        if self.mcp_web_client:
+            await self.mcp_web_client.__aexit__(exc_type, exc_val, exc_tb)
+        if self.mcp_mobile_client:
+            await self.mcp_mobile_client.__aexit__(exc_type, exc_val, exc_tb)
+
+        logger.info("Agent resources released.")
+
     # async def generate_web_code(self, request_data: CodeGenerationRequest) -> dict[str, Any]:
     #     """
     #     Generate code from Figma JSON data using LangGraph.
@@ -178,7 +176,3 @@ class CodeGeneratorAgent:
     #     except Exception as e:
     #         logger.error("Error in generate_web_code: %s", e, exc_info=True)
     #         return {"error": str(e)}
-
-    async def close(self):
-        """Cleanup resources."""
-        await self.mcp_web_client.close()

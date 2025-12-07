@@ -27,6 +27,7 @@ dependencies = [
     "rich>=14.2.0",
     "fastapi-limiter>=0.1.6",
     "mcp>=1.23.1",
+    "anyio>=4.12.0",
 ]
 
 

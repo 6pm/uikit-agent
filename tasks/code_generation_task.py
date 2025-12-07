@@ -1,5 +1,8 @@
 """
-Task for generating code
+This module contains the Huey task definition for code generation.
+It handles the asynchronous execution of the code generation workflow
+triggered by the API, managing the bridge between synchronous Huey tasks
+and the asynchronous LangGraph agent.
 """
 
 import asyncio
@@ -15,10 +18,15 @@ from src.logger_config import logger
 @huey.task()
 def code_generation_task(request_data: dict):
     """
-    BEST PRACTICES:
-    - Handle serialization properly (JSON-serializable data only)
-    - Return structured results
-    - Always use try-catch for error handling
+    Huey task wrapper for code generation.
+
+    This function acts as a synchronous entry point for the background worker.
+    It deserializes the request data, initializes the async loop, and executes
+    the agent workflow.
+
+    Args:
+        request_data (dict): The raw JSON dictionary from the API request,
+                             expected to match CodeGenerationRequest schema.
     """
     logger.info("code_generation_task: Starting code generation task")
 
@@ -26,61 +34,60 @@ def code_generation_task(request_data: dict):
     try:
         request_data_typed = CodeGenerationRequest(**request_data)
     except Exception as e:
-        logger.info("code_generation_task: Re-hydration critical data error: %s", e, exc_info=True)
-        return  # error and exit
+        logger.error("code_generation_task: Re-hydration critical data error: %s", e, exc_info=True)
+        return {"success": False, "errors": [f"Re-hydration validation error: {str(e)}"]}
 
     try:
         # Huey tasks must be synchronous, but we can run async code inside
         return asyncio.run(_async_code_generation(request_data_typed))
 
     except Exception as e:
-        error_msg = "code_generation_task: Code generation task failed: %s", e
+        error_msg = f"code_generation_task: Code generation task failed: {e}"
         logger.error("code_generation_task: %s", error_msg, exc_info=True)
 
         # BEST PRACTICE: Always return structured error response
-        return {"success": False, "errors": [error_msg], "generated_code": None}
+        return {"success": False, "errors": [error_msg]}
 
 
 async def _async_code_generation(request_data: CodeGenerationRequest) -> TestAIResponse:
     """
-    Async implementation of code generation.
-    This is called from the sync Huey task using uvloop.run().
+    Asynchronous implementation of the code generation logic.
+
+    This function initializes the CodeGeneratorAgent context manager (which handles
+    MCP server lifecycles) and invokes the LangGraph workflow.
+
+    Args:
+        request_data (CodeGenerationRequest): The validated request object.
     """
     logger.info("code_generation_task: Initializing agent for task ...")
     logger.debug("code_generation_task: Request data: %s", request_data)
 
     try:
-        # 1. Створення агента (тут відбудеться connect до MCP та build_graph)
-        agent = await CodeGeneratorAgent.create()
+        # USING ASYNC WITH (Context Manager)
+        # This creates a scope where MCP subprocesses and connections live.
+        # As soon as the code exits this block (successfully or with an error),
+        # cleanup (closing connections, terminating processes) will automatically
+        # trigger in the correct order.
+        async with CodeGeneratorAgent() as agent:
+            initial_state: CodeGenState = {
+                "figma_json": request_data.figmaJson,
+                "user_prompt": request_data.userPrompt,
+                "component_name": request_data.componentName,
+                "status_history": [],
+                "web_docs": None,
+                "mobile_docs": None,
+                "web_code": None,
+                "mobile_code": None,
+            }
 
-        # 2. Підготовка початкового стану
-        initial_state: CodeGenState = {
-            "figma_json": request_data.figmaJson,
-            "user_prompt": request_data.userPrompt,
-            "component_name": request_data.componentName,
-            "status_history": [],
-            "web_docs": None,
-            "mobile_docs": None,
-            "web_code": None,
-            "mobile_code": None,
-        }
+            logger.info("Invoking graph for task...")
 
-        # 3. ЗАПУСК ГРАФА
-        # Це найважча операція, яка займе 30-60+ секунд
-        logger.info("Invoking graph for task...")
-        final_state: CodeGenState = await agent.graph.ainvoke(initial_state)
+            # Run the LangGraph workflow
+            final_state = await agent.graph.ainvoke(initial_state)
 
-        # 4. Обробка результатів
-        logger.info("code_generation_task: Task completed.")
-
-        return final_state
+            logger.info("code_generation_task: Task completed.")
+            return final_state
 
     except Exception as e:
         logger.error("Error inside agent execution: %s", e, exc_info=True)
         return {"error": str(e)}
-
-    finally:
-        # 5. Очистка ресурсів (Закриваємо MCP з'єднання)
-        if agent:
-            await agent.close()
-            logger.info("code_generation_task: Agent resources closed.")
