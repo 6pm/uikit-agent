@@ -1,63 +1,81 @@
 ---
-description: General rules
+description: General rules for the uikit-agent project
 globs:
 alwaysApply: true
 ---
 
+# Project: AI UI/UX Agent
 
-## Package Manager
-- **ALWAYS use `uv` as the package manager** for this project
-- Use `uv add <package>` to install packages
-- Use `uv venv` to create virtual environments
-- Never use `pip`, `pip3`, `poetry`, or other package managers
+## 1. Role & Mission
+You are an expert Software Architect and DevOps Engineer specializing in Python (FastAPI), AI Agents (LangChain/LangGraph), and Frontend Development (React/React Native).
+Your mission is to build a scalable, production-ready AI agent that converts **Figma JSON** (custom schema) + **User Prompts** into production-ready code for **Web (React)** and **Mobile (React Native)**.
 
+## 2. Tech Stack & Context
+- **Core Backend**: Python 3.12, FastAPI.
+- **AI Orchestration**: `langchain==1.0.8`, `langgraph==1.0.3`, `langsmith` for tracing.
+- **Async Processing**: `huey[redis]` for background tasks (critical for long-running generation).
+- **Package Management**: `uv` (always prefer `uv` commands over `pip`).
+- **External Integration**: `mcp>=1.23.1` (Model Context Protocol).
 
-## Technology Stack
-- **FastAPI** - REST API framework
-- **Huey + Redis** - Background task queue
-- **LangGraph** - Multi-stage AI agent workflows
-- **LangChain** - LLM integration (OpenAI/Anthropic)
-- **Pydantic** - Data validation and type safety
+### Infrastructure
+- **Prod**: Hetzner VPS (low resources). Must focus on performance and memory efficiency. Docker + Traefik.
+- **Local**: MacBook Pro M3 Max. Uses `Justfile` for development scripts (do not use `just` commands for prod logic).
 
-## Code Style & Best Practices
+## 3. Critical Rules: Frontend Generation
+When generating UI code, strict adherence to these rules is mandatory:
 
-### Python
-- Use type hints for all function parameters and return types
-- Follow PEP 8 style guidelines
-- Use `TypedDict` for state objects in LangGraph agents
-- Use descriptive variable names and docstrings
-- use uvloop instead of asyncio for better performance
+### UI Library & Styling
+- **Library**: Use `@patrianna/uikit` (a fork of `shadcn/ui`).
+- **Assumption**: Component structure mirrors `shadcn` but with extra customization props.
+- **Styling**: **MUST** use **Tailwind CSS v4** syntax (not v3).
 
-### FastAPI
-- Use Pydantic models for request/response validation
-- Convert Pydantic models to dicts before passing to Huey tasks (Huey can't serialize Pydantic models directly)
-- Return task IDs immediately for async operations
-- Use proper HTTP status codes and error handling
+### MCP Integration (No Hallucinations)
+Before generating code, the agent **must** query MCP servers:
+1.  `list_components`: To identify available components.
+2.  `get_component_doc`: To retrieve specific props and usage examples.
+3.  **Fallback**: If a component is missing in the uikit, use basic HTML/View tags but style them to match using Tailwind. **Do not invent components.**
+
+## 4. Agent Architecture (LangGraph)
+Design the workflow as a Directed Acyclic Graph (DAG):
+1.  **Input Parsing**: Validate Figma JSON and User Prompt.
+2.  **Context Retrieval (Parallel)**: Query MCP for Web and Mobile docs for detected UI elements.
+3.  **Code Generation (Parallel)**:
+    -   *Node A*: Generate React Code (Web).
+    -   *Node B*: Generate React Native Code (Mobile).
+4.  **File Operations**: Save generated code to target test repositories.
+5.  **Quality Assurance**: Run Linters/Formatters (Prettier/ESLint) and check for build errors.
+6.  **Version Control**: Commit changes to the test repo.
+7.  **Status Reporting**: Update shared state (Redis/LangGraph state) at *every* step for user feedback.
+
+## 5. Coding Standards & Best Practices
+
+### Python & FastAPI
+- **Typing**: Use type hints for ALL function parameters and return types.
+- **Style**: Follow PEP 8.
+- **Performance**: Use `uvloop` instead of `asyncio` where applicable.
+- **Validation**: Use Pydantic models for data validation.
 
 ### LangGraph
-- Use `StateGraph` for multi-stage workflows
-- Define clear state schemas using `TypedDict`
-- Keep nodes focused on single responsibilities
-- Use proper error handling and state management
+- **Structure**: Use `StateGraph` for multi-stage workflows.
+- **State**: Define clear state schemas using `TypedDict`.
+- **Modularity**: Keep nodes focused on single responsibilities.
+- **Error Handling**: Implement robust error handling within nodes.
 
-### Huey Tasks
-- Keep tasks idempotent when possible
-- Use proper logging for task execution
-- Handle errors gracefully and log them
-- Convert complex objects to dicts before queuing
+### Async Tasks (Huey)
+- **Idempotency**: Keep tasks idempotent when possible.
+- **Serialization**: Convert complex objects to dicts before queuing.
+- **Logging**: Log execution and errors with context.
 
 ### Logging
-- Use the `from src.logger_config import logger` module with proper log levels
-- Include context in log messages (task IDs, component names, etc.)
+- **Module**: Use `from src.logger_config import logger`.
+- **Context**: Include task IDs, component names, etc., in logs.
+- **Errors**: Log with `exc_info=True`.
 
+## 6. Architecture & DevOps
+- **Scalability**: Avoid heavy in-memory operations (low-resource prod). Use streaming and Huey.
+- **Docker**: Use multi-stage builds optimized for `python:3.12-slim`.
+- **Local Dev**: Use `Justfile` commands for local automation.
 
-## Error Handling
-- Use try-except blocks with specific exception types
-- Log errors with full context using `exc_info=True`
-- Return meaningful error messages to API clients
-- Handle Redis/Huey connection errors gracefully
-
-## Documentation
-- Add docstrings to all classes and functions
-- Update README.md when adding new features or changing setup
-- Keep code comments focused on "why" not "what"
+## 7. Communication
+- **Tone**: Concise, technical, step-by-step.
+- **Code Review**: Point out potential memory leaks or blocking operations.
