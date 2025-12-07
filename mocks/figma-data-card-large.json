@@ -1,0 +1,404 @@
+{
+  "name": "Flex",
+  "id": "417:617",
+  "type": "FRAME",
+  "layout": {
+    "layoutMode": "VERTICAL",
+    "itemSpacing": 10,
+    "autoLayout": "start-center",
+    "maxWidth": 500,
+    "width": 500,
+    "height": 470
+  },
+  "children": [
+    {
+      "name": "Card",
+      "id": "419:135",
+      "type": "FRAME",
+      "variables": "itemSpacing:spacing/6 paddingLeft:spacing/6 paddingTop:spacing/6 paddingRight:spacing/6 paddingBottom:spacing/6 topLeftRadius:border radius/xl topRightRadius:border radius/xl bottomLeftRadius:border radius/xl bottomRightRadius:border radius/xl fills:base/card strokes:base/border",
+      "layout": {
+        "layoutMode": "VERTICAL",
+        "itemSpacing": 24,
+        "padding": "24 24 24 24",
+        "autoLayout": "start-start",
+        "width": 500,
+        "height": 470
+      },
+      "children": [
+        {
+          "name": "CardHeader",
+          "id": "419:136",
+          "type": "INSTANCE",
+          "componentProperties": {
+            "Description Text#268:2": "This is a card description.",
+            "Title Text#268:1": "Title Text",
+            "Show Description#268:0": true
+          },
+          "variables": "itemSpacing:spacing/1-5",
+          "layout": {
+            "layoutMode": "VERTICAL",
+            "itemSpacing": 6,
+            "autoLayout": "start-start",
+            "width": 452,
+            "height": 42
+          },
+          "children": [
+            {
+              "name": "Title Text",
+              "id": "I419:136;268:956",
+              "type": "TEXT",
+              "variables": "fills:base/card-foreground letterSpacing:font/letter-spacing/tight fontSize:typography/base sizes/base/font-size fontFamily:typography/font family/font-sans fontWeight:font/weight/semibold",
+              "layout": {
+                "width": 452,
+                "height": 16
+              },
+              "text": {
+                "content": "Title Text",
+                "fontSize": 16,
+                "fontWeight": 600,
+                "textAlignHorizontal": "LEFT",
+                "textAlignVertical": "TOP",
+                "letterSpacing": {
+                  "unit": "PIXELS",
+                  "value": -0.4000000059604645
+                },
+                "lineHeight": 100,
+                "color": "rgb(236, 195, 255)",
+                "fontFamily": "Lato"
+              }
+            },
+            {
+              "name": "This is a card description.",
+              "id": "I419:136;268:957",
+              "type": "TEXT",
+              "variables": "fills:base/muted-foreground fontSize:typography/base sizes/small/font-size fontFamily:typography/font family/font-sans lineHeight:typography/base sizes/small/line-height fontWeight:font/weight/normal",
+              "layout": {
+                "width": 452,
+                "height": 20
+              },
+              "text": {
+                "content": "This is a card description.",
+                "fontSize": 14,
+                "fontWeight": 400,
+                "textAlignHorizontal": "LEFT",
+                "textAlignVertical": "TOP",
+                "letterSpacing": {
+                  "unit": "PERCENT",
+                  "value": 0
+                },
+                "lineHeight": 20,
+                "color": "rgb(236, 195, 255)",
+                "fontFamily": "Lato"
+              }
+            }
+          ]
+        },
+        {
+          "name": "RichText",
+          "id": "419:186",
+          "type": "FRAME",
+          "layout": {
+            "layoutMode": "VERTICAL",
+            "autoLayout": "start-start",
+            "width": 452,
+            "height": 296
+          },
+          "children": [
+            {
+              "name": "TypographyH3",
+              "id": "419:196",
+              "type": "INSTANCE",
+              "componentProperties": {
+                "Text#40:2": "Jokester's Revolt"
+              },
+              "variables": "paddingTop:spacing/8",
+              "layout": {
+                "layoutMode": "HORIZONTAL",
+                "itemSpacing": 8,
+                "padding": "32 0 0 0",
+                "autoLayout": "start-center",
+                "width": 452,
+                "height": 68
+              },
+              "children": [
+                {
+                  "name": "This is heading 3",
+                  "id": "I419:196;26:224",
+                  "type": "TEXT",
+                  "variables": "fills:colors/foreground letterSpacing:typography/typography components/h3/letter-spacing fontSize:typography/typography components/h3/font-size fontFamily:typography/typography components/h3/font-family lineHeight:typography/typography components/h3/line-height fontWeight:typography/typography components/h3/font-weight",
+                  "layout": {
+                    "width": 221,
+                    "height": 36
+                  },
+                  "text": {
+                    "content": "Jokester's Revolt",
+                    "fontSize": 30,
+                    "fontWeight": 500,
+                    "textAlignHorizontal": "LEFT",
+                    "textAlignVertical": "TOP",
+                    "letterSpacing": {
+                      "unit": "PIXELS",
+                      "value": 0
+                    },
+                    "lineHeight": 36,
+                    "color": "rgb(236, 195, 255)",
+                    "fontFamily": "Lato"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "TypographyP",
+              "id": "419:193",
+              "type": "INSTANCE",
+              "componentProperties": {
+                "Text#40:6": "The king's subjects were not amused. They grumbled and complained, but the king was firm:"
+              },
+              "variables": "paddingTop:spacing/6",
+              "layout": {
+                "layoutMode": "HORIZONTAL",
+                "itemSpacing": 8,
+                "padding": "24 0 0 0",
+                "autoLayout": "start-center",
+                "width": 452,
+                "height": 80
+              },
+              "children": [
+                {
+                  "name": "This is a text",
+                  "id": "I419:193;26:238",
+                  "type": "TEXT",
+                  "variables": "fills:colors/foreground letterSpacing:typography/typography components/p/letter-spacing fontSize:typography/typography components/p/font-size fontFamily:typography/typography components/p/font-family lineHeight:typography/typography components/p/line-height fontWeight:typography/typography components/p/font-weight",
+                  "layout": {
+                    "width": 452,
+                    "height": 56
+                  },
+                  "text": {
+                    "content": "The king's subjects were not amused. They grumbled and complained, but the king was firm:",
+                    "fontSize": 16,
+                    "fontWeight": 400,
+                    "textAlignHorizontal": "LEFT",
+                    "textAlignVertical": "TOP",
+                    "letterSpacing": {
+                      "unit": "PIXELS",
+                      "value": 0
+                    },
+                    "lineHeight": 28,
+                    "color": "rgb(236, 195, 255)",
+                    "fontFamily": "Lato"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "TypographyList",
+              "id": "419:194",
+              "type": "INSTANCE",
+              "componentProperties": {
+                "Text#40:8": "1st level of puns: 5 gold coins\n2nd level of jokes: 10 gold coins\n3rd level of one-liners : 20 gold coins"
+              },
+              "variables": "itemSpacing:spacing/2 paddingLeft:spacing/6 paddingTop:spacing/6 paddingBottom:spacing/6",
+              "layout": {
+                "layoutMode": "VERTICAL",
+                "itemSpacing": 8,
+                "padding": "24 0 24 24",
+                "autoLayout": "start-start",
+                "width": 452,
+                "height": 148
+              },
+              "children": [
+                {
+                  "name": "This is a list This is a list This is a list",
+                  "id": "I419:194;40:122",
+                  "type": "TEXT",
+                  "variables": "fills:colors/foreground lineHeight:typography/typography components/list/line-height letterSpacing:typography/typography components/list/letter-spacing fontFamily:typography/typography components/list/font-family fontSize:typography/typography components/list/font-size",
+                  "layout": {
+                    "width": 428,
+                    "height": 100
+                  },
+                  "text": {
+                    "content": "1st level of puns: 5 gold coins\n2nd level of jokes: 10 gold coins\n3rd level of one-liners : 20 gold coins",
+                    "fontSize": 16,
+                    "fontWeight": 400,
+                    "textAlignHorizontal": "LEFT",
+                    "textAlignVertical": "TOP",
+                    "letterSpacing": {
+                      "unit": "PIXELS",
+                      "value": 0
+                    },
+                    "lineHeight": 28,
+                    "color": "rgb(236, 195, 255)",
+                    "fontFamily": "Lato"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "CardFooter",
+          "id": "419:138",
+          "type": "INSTANCE",
+          "componentProperties": {
+            "Variant": "2 Buttons"
+          },
+          "variables": "paddingLeft:spacing/6 paddingRight:spacing/6",
+          "layout": {
+            "layoutMode": "HORIZONTAL",
+            "itemSpacing": 10,
+            "padding": "0 24 0 24",
+            "autoLayout": "space-between-center",
+            "width": 452,
+            "height": 36
+          },
+          "children": [
+            {
+              "name": "Button",
+              "id": "I419:138;268:933",
+              "type": "INSTANCE",
+              "componentProperties": {
+                "Right Icon#267:65": "503:4218",
+                "Left Icon#46:0": "503:4218",
+                "Show Left Icon#37:11": false,
+                "Show Right Icon#267:0": false,
+                "Button Text#37:10": "Cancel",
+                "Variant": "Outline",
+                "State": "Default",
+                "Size": "default"
+              },
+              "variables": "itemSpacing:spacing/2 paddingLeft:spacing/4 paddingTop:spacing/2 paddingRight:spacing/4 paddingBottom:spacing/2 height:height/h-9 topLeftRadius:components/button/outline/border-radius topRightRadius:components/button/outline/border-radius bottomLeftRadius:components/button/outline/border-radius bottomRightRadius:components/button/outline/border-radius strokeTopWeight:components/button/outline/border-width strokeBottomWeight:components/button/outline/border-width strokeLeftWeight:components/button/outline/border-width strokeRightWeight:components/button/outline/border-width fills:components/button/outline/background-color strokes:components/button/outline/border-color",
+              "layout": {
+                "layoutMode": "HORIZONTAL",
+                "itemSpacing": 8,
+                "padding": "8 16 8 16",
+                "autoLayout": "center-center",
+                "width": 74,
+                "height": 36
+              },
+              "children": [
+                {
+                  "name": "Icon / Circle",
+                  "id": "I419:138;268:933;37:1559",
+                  "type": "INSTANCE",
+                  "componentProperties": {},
+                  "variables": "width:width/w-4 height:height/h-4",
+                  "layout": {
+                    "width": 16,
+                    "height": 16
+                  }
+                },
+                {
+                  "name": "Button",
+                  "id": "I419:138;268:933;37:1478",
+                  "type": "TEXT",
+                  "variables": "fills:components/button/outline/color fontSize:typography/base sizes/small/font-size fontFamily:typography/font family/font-sans lineHeight:typography/base sizes/small/line-height fontWeight:font/weight/medium",
+                  "layout": {
+                    "width": 42,
+                    "height": 20
+                  },
+                  "text": {
+                    "content": "Cancel",
+                    "fontSize": 14,
+                    "fontWeight": 500,
+                    "textAlignHorizontal": "LEFT",
+                    "textAlignVertical": "CENTER",
+                    "letterSpacing": {
+                      "unit": "PERCENT",
+                      "value": 0
+                    },
+                    "lineHeight": 20,
+                    "color": "rgb(71, 255, 244)",
+                    "fontFamily": "Lato"
+                  }
+                },
+                {
+                  "name": "Icon / Circle",
+                  "id": "I419:138;268:933;267:4103",
+                  "type": "INSTANCE",
+                  "componentProperties": {},
+                  "variables": "width:width/w-4 height:height/h-4",
+                  "layout": {
+                    "width": 16,
+                    "height": 16
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Button",
+              "id": "I419:138;268:934",
+              "type": "INSTANCE",
+              "componentProperties": {
+                "Right Icon#267:65": "503:4218",
+                "Left Icon#46:0": "503:4218",
+                "Show Right Icon#267:0": false,
+                "Show Left Icon#37:11": false,
+                "Button Text#37:10": "Deploy",
+                "Variant": "Default",
+                "State": "Default",
+                "Size": "default"
+              },
+              "variables": "itemSpacing:spacing/2 paddingLeft:spacing/4 paddingTop:spacing/2 paddingRight:spacing/4 paddingBottom:spacing/2 height:height/h-9 topLeftRadius:components/button/default/border-radius topRightRadius:components/button/default/border-radius bottomLeftRadius:components/button/default/border-radius bottomRightRadius:components/button/default/border-radius strokeTopWeight:components/button/default/border-width strokeBottomWeight:components/button/default/border-width strokeLeftWeight:components/button/default/border-width strokeRightWeight:components/button/default/border-width fills:components/button/default/background-color-to fills:components/button/default/background-color-from strokes:components/button/default/border-color",
+              "layout": {
+                "layoutMode": "HORIZONTAL",
+                "itemSpacing": 8,
+                "padding": "8 16 8 16",
+                "autoLayout": "center-center",
+                "width": 77,
+                "height": 36
+              },
+              "children": [
+                {
+                  "name": "Icon / Circle",
+                  "id": "I419:138;268:934;37:1562",
+                  "type": "INSTANCE",
+                  "componentProperties": {},
+                  "variables": "width:width/w-4 height:height/h-4",
+                  "layout": {
+                    "width": 16,
+                    "height": 16
+                  }
+                },
+                {
+                  "name": "Button",
+                  "id": "I419:138;268:934;37:925",
+                  "type": "TEXT",
+                  "variables": "fills:components/button/default/color fontSize:typography/base sizes/small/font-size fontFamily:typography/font family/font-sans lineHeight:typography/base sizes/small/line-height fontWeight:font/weight/medium",
+                  "layout": {
+                    "width": 45,
+                    "height": 20
+                  },
+                  "text": {
+                    "content": "Deploy",
+                    "fontSize": 14,
+                    "fontWeight": 500,
+                    "textAlignHorizontal": "LEFT",
+                    "textAlignVertical": "CENTER",
+                    "letterSpacing": {
+                      "unit": "PERCENT",
+                      "value": 0
+                    },
+                    "lineHeight": 20,
+                    "color": "rgb(255, 255, 255)",
+                    "fontFamily": "Lato"
+                  }
+                },
+                {
+                  "name": "Icon / Circle",
+                  "id": "I419:138;268:934;267:4072",
+                  "type": "INSTANCE",
+                  "componentProperties": {},
+                  "variables": "width:width/w-4 height:height/h-4",
+                  "layout": {
+                    "width": 16,
+                    "height": 16
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
