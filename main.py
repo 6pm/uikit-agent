@@ -65,9 +65,7 @@ async def generate_code(request: CodeGenerationRequest):
     Returns:
         Task ID and status
     """
-    logger.info(
-        f"main: [FASTAPI]: Received code generation request with component name: {request.componentName}",
-    )
+    logger.info("main: [FASTAPI]: Received code generation request with component name: %s", request.componentName)
 
     try:
         # BEST PRACTICE: Convert Pydantic model to dict before passing to Huey
