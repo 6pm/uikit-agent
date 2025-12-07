@@ -18,7 +18,7 @@
         "--ssl-certfile",
         "certificates/localhost+2.pem"
       ],
-      "justMyCode": false,
+      "justMyCode": true,
       "env": {
         "REDIS_HOST": "localhost"
       },
@@ -32,9 +32,9 @@
       "args": [
         "tasks.huey",
         "--workers",
-        "2"
+        "1"
       ],
-      "justMyCode": false,
+      "justMyCode": true,
       "env": {
         "REDIS_HOST": "localhost"
       },
@@ -46,7 +46,7 @@
       "request": "launch",
       "program": "${file}",
       "console": "integratedTerminal",
-      "justMyCode": false,
+      "justMyCode": true,
       "env": {
         "REDIS_HOST": "localhost"
       }
