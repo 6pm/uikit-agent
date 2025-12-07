@@ -47,9 +47,8 @@ alwaysApply: true
 - Convert complex objects to dicts before queuing
 
 ### Logging
-- Use the `logging` module with proper log levels
+- Use the `from src.logger_config import logger` module with proper log levels
 - Include context in log messages (task IDs, component names, etc.)
-- Use structured logging format: `%(asctime)s - %(name)s - %(levelname)s - %(message)s`
 
 
 ## Error Handling
