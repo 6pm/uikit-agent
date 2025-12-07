@@ -1,17 +1,19 @@
-import logging
-from typing import Any
+import asyncio
 
-from langchain_core.messages import HumanMessage, SystemMessage
+from huey.utils import os
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.graph import END, START, StateGraph
 
 from agents.code_generator.state import CodeGenState
-from schemas.api.code_generation_types import CodeGenerationRequest
+from src.logger_config import logger
 
-from .nodes import CodeGenNodes
-from .prompts import SYSTEM_PROMPT
-
-logger = logging.getLogger(__name__)
+from .mcp_client import MCPClient
+from .nodes import (
+    InputValidationNodes,
+    MCPContextRetrievalNode,
+    # MobileGenNodes,
+    # WebGenNodes,
+)
 
 
 class CodeGeneratorAgent:
@@ -25,11 +27,29 @@ class CodeGeneratorAgent:
         self.graph = None
         self.gemini_model = None
 
+        # configure MCP clients
+        self.mcp_web_client = MCPClient("node_modules/@patrianna/uikit/dist/mcp-server/server.js")
+        self.mcp_mobile_client = None
+
     async def _initialize(self):
         """
         Async initialization method.
         """
+        # connect to MCP servers
+        connect_tasks = [self.mcp_web_client.connect()]
+
+        if self.mcp_mobile_client:
+            connect_tasks.append(self.mcp_mobile_client.connect())
+
+        await asyncio.gather(*connect_tasks, return_exceptions=True)
+
+        if self.mcp_mobile_client:
+            await self.mcp_mobile_client.connect()
+
+        # initialize Gemini model
         await self.init_gemini_model()
+
+        # build graph
         await self.build_graph()
 
     @classmethod
@@ -44,59 +64,121 @@ class CodeGeneratorAgent:
     async def init_gemini_model(self):
         """
         Initialize Gemini model.
-        У майбутньому буде декілька класів з нодами (ValidationNodes, RefactoringNodes).
-        Краще створити один екземпляр моделі в Оркестраторі і роздати його всім нодам,
-        ніж кожна нода буде створювати своє з'єднання.
+        In the future there will be several node classes (ValidationNodes, RefactoringNodes).
+        It is better to create one model instance in the Orchestrator and share it with all nodes,
+        rather than having each node create its own connection.
         """
         self.gemini_model = ChatGoogleGenerativeAI(
-            model="gemini-2.5-flash-lite",
-            temperature=0,
+            model=os.getenv("MODEL_CODEGEN") or "gemini-2.5-pro",
+            temperature=0.2,
             max_retries=2,
         )
 
     async def build_graph(self):
         """
-        Build the StateGraph for code generation.
+        Будує спрямований ациклічний граф (DAG) для генерації коду.
+        Включає етапи: Валідація -> Контекст -> (Веб | Мобайл) -> Лінтери -> Фініш.
         """
-        # Initialize nodes with the model
-        nodes = CodeGenNodes(self.gemini_model)
+        # 1. Ініціалізація класів нод із залежностями
+        input_nodes = InputValidationNodes()
 
-        # Set up Graph Builder with State
-        # We use our custom CodeGenState
-        graph_builder = StateGraph[CodeGenState, None, CodeGenState, CodeGenState](CodeGenState)
+        # Передаємо обидва MCP клієнти
+        mcp_nodes = MCPContextRetrievalNode(web_client=self.mcp_web_client, mobile_client=self.mcp_mobile_client)
 
-        # Add nodes
-        # We pass the method from our nodes instance
-        graph_builder.add_node("generate_code", nodes.call_model)
+        # Передаємо модель (можна біндити тули, якщо треба, але ми використовуємо MCP окремо)
+        # web_nodes = WebGenNodes(self.gemini_model)
+        # mobile_nodes = MobileGenNodes(self.gemini_model)
 
-        # Build flow
-        graph_builder.add_edge(START, "generate_code")
-        graph_builder.add_edge("generate_code", END)
+        # 2. Створення графа зі типізованим станом
+        workflow = StateGraph(CodeGenState)
 
-        self.graph = graph_builder.compile()
+        # --- Додавання Нод (Nodes) ---
 
-    async def generate_code(self, request_data: CodeGenerationRequest) -> dict[str, Any]:
-        """
-        Generate code from Figma JSON data using LangGraph.
-        This is main function for launching the agent.
-        As a result it will return generated code and status of the task.
+        # Спільні етапи
+        workflow.add_node("validate_input", input_nodes.validate_input)
+        workflow.add_node("retrieve_mcp_context", mcp_nodes.retrieve_context)
 
-        Returns:
-            dict[str, Any]: Dictionary with generated code and status of the task
-        """
-        # Convert request to JSON string
-        message_str = request_data.model_dump_json()
+        # Гілка Web
+        # workflow.add_node("generate_web", web_nodes.generate_code)
+        # workflow.add_node("lint_web", web_nodes.run_linter)
 
-        # Initialization of messages, system prompt and status
-        inputs = {
-            "messages": [SystemMessage(content=SYSTEM_PROMPT), HumanMessage(content=message_str)],
-            "status": "pending",
-        }
+        # Гілка Mobile
+        # workflow.add_node("generate_mobile", mobile_nodes.generate_code)
+        # workflow.add_node("lint_mobile", mobile_nodes.run_linter)
 
-        # Invoke graph
-        result = await self.graph.ainvoke(inputs)
+        # --- Побудова Зв'язків (Edges) ---
 
-        # Get last message
-        last_message = result["messages"][-1]
+        # Старт -> Валідація
+        workflow.add_edge(START, "validate_input")
 
-        return {"content": last_message.content, "status": result.get("status")}
+        # Умовний перехід: Якщо валідація провалилась — кінець, інакше — за контекстом
+        workflow.add_conditional_edges(
+            "validate_input",
+            input_nodes.should_continue,  # Функція, яка приймає рішення чи йти далі чи завершити виконання якщо є помилка у валідації
+            {  # Мапа: {що_повернула_функція: куди_йти}
+                "retrieve_mcp_context": "retrieve_mcp_context",
+                END: END,
+            },
+        )
+
+        # TODO: це тільки для тесту проміжних 2 викликів щоб закінчити граф
+        workflow.add_edge("retrieve_mcp_context", END)
+
+        # РОЗГАЛУЖЕННЯ (Fork): Після контексту запускаємо обидві гілки паралельно
+        # workflow.add_edge("retrieve_mcp_context", "generate_web")
+        # workflow.add_edge("retrieve_mcp_context", "generate_mobile")
+
+        # # Ланцюжок Web
+        # workflow.add_edge("generate_web", "lint_web")
+        # workflow.add_edge("lint_web", END)
+
+        # # Ланцюжок Mobile
+        # workflow.add_edge("generate_mobile", "lint_mobile")
+        # workflow.add_edge("lint_mobile", END)
+
+        # 3. Компіляція графа
+        self.graph = workflow.compile()
+        logger.info("CodeGen Graph built successfully.")
+
+    # async def generate_web_code(self, request_data: CodeGenerationRequest) -> dict[str, Any]:
+    #     """
+    #     Generate code from Figma JSON data using LangGraph.
+    #     This is main function for launching the agent.
+    #     As a result it will return generated code and status of the task.
+
+    #     Returns:
+    #         dict[str, Any]: Dictionary with generated code and status of the task
+    #     """
+
+    #     try:
+    #         # Initialization of messages, system prompt and status
+    #         inputs = {
+    #             "messages": [
+    #                 SystemMessage(content=SYSTEM_PROMPT_WEB),
+    #                 HumanMessage(
+    #                     content=f"""
+    #                     {request_data.userPrompt or ""} \n {USER_MESSAGE_WEB_START} \n
+    #                     {json.dumps(request_data.figmaJson, indent=2)}"""
+    #                 ),
+    #             ]
+    #         }
+
+    #         # Invoke graph
+    #         result = await self.graph.ainvoke(inputs)
+
+    #         if result.get("status") == "error":
+    #             print("Error! generate_web_code")
+    #             return {"error": result.get("error"), "status": "error"}
+
+    #         # Get last message
+    #         last_message = result["messages"][-1]
+
+    #         return {"content": last_message.content, "status": "completed"}
+
+    #     except Exception as e:
+    #         logger.error("Error in generate_web_code: %s", e, exc_info=True)
+    #         return {"error": str(e)}
+
+    async def close(self):
+        """Cleanup resources."""
+        await self.mcp_web_client.close()
