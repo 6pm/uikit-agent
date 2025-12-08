@@ -5,7 +5,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.graph import END, START, StateGraph
 
 from agents.code_generator.state import CodeGenState
-from src.logger_config import logger
+from app.utils.logger_config import logger
 
 from .mcp_client import MCPClient
 from .nodes import (

@@ -9,9 +9,9 @@ import asyncio
 
 from agents.code_generator import CodeGeneratorAgent
 from agents.code_generator.state import CodeGenState
+from app.utils.logger_config import logger
 from config import huey
 from schemas.api.code_generation_types import CodeGenerationRequest, CodeGenTaskResult
-from src.logger_config import logger
 
 
 @huey.task()

@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter, Request
 
-from src.logger_config import logger
+from app.utils.logger_config import logger
 from tasks.test_task import long_running_task
 
 router = APIRouter(tags=["Health Check"])

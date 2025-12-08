@@ -3,8 +3,8 @@
 import asyncio
 import time
 
+from app.utils.logger_config import logger
 from config import huey
-from src.logger_config import logger
 
 
 @huey.task()

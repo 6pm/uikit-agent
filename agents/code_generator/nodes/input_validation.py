@@ -4,7 +4,7 @@ from typing import Any, Literal
 from langgraph.graph import END
 
 from agents.code_generator.state import CodeGenState
-from src.logger_config import logger
+from app.utils.logger_config import logger
 
 
 class InputValidationNodes:

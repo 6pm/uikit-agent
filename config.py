@@ -7,7 +7,7 @@ import uvloop
 from dotenv import load_dotenv
 from huey import RedisHuey
 
-from src.logger_config import setup_logging
+from app.utils.logger_config import setup_logging
 
 # Load environment variables from .env file
 load_dotenv()

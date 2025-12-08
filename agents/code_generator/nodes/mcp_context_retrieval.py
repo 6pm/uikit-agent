@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Any
 
 from agents.code_generator.state import CodeGenState
-from src.logger_config import logger
+from app.utils.logger_config import logger
 
 
 class MCPContextRetrievalNode:

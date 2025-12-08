@@ -67,7 +67,7 @@ Design the workflow as a Directed Acyclic Graph (DAG):
 - **Logging**: Log execution and errors with context.
 
 ### Logging
-- **Module**: Use `from src.logger_config import logger`.
+- **Module**: Use `from app.utils.logger_config import logger`.
 - **Context**: Include task IDs, component names, etc., in logs.
 - **Errors**: Log with `exc_info=True`.
 

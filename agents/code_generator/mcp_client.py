@@ -9,7 +9,7 @@ from contextlib import AsyncExitStack
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 
-from src.logger_config import logger
+from app.utils.logger_config import logger
 
 
 class MCPClient:

@@ -10,7 +10,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 
 from agents.code_generator.prompts import SYSTEM_PROMPT_WEB, USER_MESSAGE_WEB_START
 from agents.code_generator.state import CodeGenState
-from src.logger_config import logger
+from app.utils.logger_config import logger
 
 
 # Web Generator Logic

@@ -6,8 +6,8 @@ import redis.asyncio as redis
 from fastapi import FastAPI
 from fastapi_limiter import FastAPILimiter
 
+from app.utils.logger_config import logger
 from config import REDIS_HOST
-from src.logger_config import logger
 
 
 # @asynccontextmanager transforms the function into a context manager.

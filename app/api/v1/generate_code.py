@@ -3,8 +3,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi_limiter.depends import RateLimiter
 
+from app.utils.logger_config import logger
 from schemas.api.code_generation_types import CodeGenerationRequest, CodeGenerationResponse
-from src.logger_config import logger
 from tasks.code_generation_task import code_generation_task
 
 router = APIRouter(tags=["Code Generation"])
