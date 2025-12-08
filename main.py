@@ -82,7 +82,6 @@ async def generate_code(request: CodeGenerationRequest):
             "message": "Code generation task accepted",
             "task_id": task_id,
             "status": "queued",
-            "components_count": "it just test field",
         }
 
     except Exception as e:

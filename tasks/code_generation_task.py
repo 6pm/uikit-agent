@@ -10,8 +10,7 @@ import asyncio
 from agents.code_generator import CodeGeneratorAgent
 from agents.code_generator.state import CodeGenState
 from config import huey
-from schemas.ai_models.test_ai_response import TestAIResponse
-from schemas.api.code_generation_types import CodeGenerationRequest
+from schemas.api.code_generation_types import CodeGenerationRequest, CodeGenTaskResult
 from src.logger_config import logger
 
 
@@ -49,7 +48,7 @@ def code_generation_task(request_data: dict):
         return {"success": False, "errors": [error_msg]}
 
 
-async def _async_code_generation(request_data: CodeGenerationRequest) -> TestAIResponse:
+async def _async_code_generation(request_data: CodeGenerationRequest) -> CodeGenTaskResult:
     """
     Asynchronous implementation of the code generation logic.
 
@@ -86,7 +85,12 @@ async def _async_code_generation(request_data: CodeGenerationRequest) -> TestAIR
             final_state = await agent.graph.ainvoke(initial_state)
 
             logger.info("code_generation_task: Task completed.")
-            return final_state
+
+            return {
+                "status_history": final_state.get("status_history", []),
+                "web_code": final_state.get("web_code"),
+                "mobile_code": final_state.get("mobile_code"),
+            }
 
     except Exception as e:
         logger.error("Error inside agent execution: %s", e, exc_info=True)
