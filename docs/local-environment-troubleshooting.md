@@ -46,23 +46,20 @@ You will see Huey startup logs. Keep this terminal open.
 #### B. Return to the first terminal and send a request to our API to create a task.
 
 ```sh
-curl -X POST https://localhost:8000/generate-code \
+curl -k -X POST https://0.0.0.0:8000/generate-code \
   -H "Content-Type: application/json" \
+  -H "TRAEFIK_SECRET_HEADER: TRAEFIK_SECRET_TOKEN" \
   -d '{
-    "request": [
+    "figmaJson": [
       {
         "component_id": "comp_123",
-        "name": "PrimaryButton",
-        "root_node": {
-          "id": "1:23",
-          "name": "Button",
-          "type": "FRAME",
-          "properties": {"width": 120, "height": 40}
-        }
+        "name": "Button",
       }
     ],
-    "target_framework": "react",
-    "style_approach": "tailwind"
+    "componentName": "TestComponent",
+    "userPrompt": "always add !! to the end of each text element in the end",
+    "userId": "111222",
+    "userName": "your-name"
   }'
 ```
 
