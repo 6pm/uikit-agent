@@ -1,5 +1,6 @@
 """Background task definitions for Huey task queue."""
 
+import asyncio
 import time
 
 from config import huey
@@ -14,11 +15,21 @@ def long_running_task(some_data: str):
     # Use logger.info instead of print
     logger.info("test_task: [HUEY WORKER]: Received task! Data: %s", some_data)
 
-    time.sleep(5)  # Simulate 5 seconds of work
-
-    result = f"Processing result: {some_data.upper()}"
+    # Huey tasks must be synchronous, but we can run async code inside
+    result = asyncio.run(_long_running_task(some_data))
 
     #  Log our result!
     logger.info("test_task: [HUEY WORKER]: Task completed! Result: %s", result)
+
+    return result
+
+
+async def _long_running_task(some_data: str):
+    """
+    Asynchronous implementation of the long running task.
+    """
+    time.sleep(3)  # Simulate few seconds of work
+
+    result = f"Processing result: {some_data.upper()}"
 
     return result
