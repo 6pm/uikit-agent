@@ -192,12 +192,18 @@ uikit-agent/
 ├──agents/
 │  └── code_generator/
 │       ├── agent.py          # The main class (CodeGeneratorAgent) - Orchestrator
-│       ├── nodes.py          # The logic (CodeGenNodes) - where the work happens
+│       ├── nodes/            # The logic (CodeGenNodes) - where the work happens
+│       │   ├── web_generator.py
+│       │   ├── mobile_generator.py
+│       │   └── ...
 │       ├── state.py          # The data schema (State)
 │       └── prompts.py        # System prompts (Strings)
+├── app/
+│   ├── api/                  # API Routes
+│   ├── core/                 # Core application logic (lifespan, etc.)
+│   └── utils/                # Utility functions (logger, etc.)
 ├── schemas/             # Pydantic models and type definitions
-│   ├── api/            # API request/response models
-│   └── ai_models/      # AI model response schemas
+│   └── api/            # API request/response models
 ├── tasks/              # Huey background tasks
 ├── config.py           # Application configuration
 ├── main.py             # FastAPI application
