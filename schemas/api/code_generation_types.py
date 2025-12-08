@@ -1,3 +1,5 @@
+"""Types for code generation API requests and responses."""
+
 import operator
 from typing import Annotated
 
@@ -7,10 +9,16 @@ from agents.code_generator.state import StatusEvent
 
 
 class CodeGenerationRequest(BaseModel):
-    # Support both JSON string (API) and parsed object (Task re-hydration)
-    figmaJson: dict | list | Json
+    """
+    Request model for the '/generate-code' route.
+    Validates all input data from the API request.
+    """
+
+    figmaJson: dict | list | Json  # Support JSON and parsed object (Task re-hydration)
     componentName: str
     userPrompt: str | None = None
+    userId: str
+    userName: str
 
 
 # ----
