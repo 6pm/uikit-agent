@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 
 import redis.asyncio as redis
 from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi_limiter import FastAPILimiter
 from fastapi_limiter.depends import RateLimiter
 
@@ -30,6 +31,19 @@ app = FastAPI(
     description="API for generating code from Figma components using LangGraph",
     version="0.0.1",
     lifespan=lifespan,
+)
+
+# --- CORS SETTINGS
+app.add_middleware(
+    CORSMiddleware,
+    # For Figma (Origin: null) wildcard is required,
+    # BUT we disable credentials so the browser allows it.
+    allow_origins=["*"],
+    # DISABLE this for wildcard (safer)
+    # Enable only if you are sure you are sending cookies
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
