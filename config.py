@@ -27,5 +27,4 @@ huey = RedisHuey("my_app", host=REDIS_HOST, port=6379)
 @huey.on_startup()
 def patch_asyncio():
     """Patch asyncio to use uvloop"""
-    print("🚀 Worker starting: Installing uvloop...")
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
