@@ -52,4 +52,4 @@ run-deploy:
     {{docker_cmd}} up -d --build --remove-orphans
 
     # 3. Clean old images to avoid filling up disk (very important for VPS!)
-    {{docker_cmd}} image prune -f
+    docker image prune -f
