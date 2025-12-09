@@ -45,12 +45,22 @@ Install Docker Engine and the Docker Compose plugin:
 apt install -y docker.io docker-compose-v2
 ```
 
+### Install Just
+```sh
+# installation command
+curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | sudo bash -s -- --to /usr/local/bin
+
+# verify if installed, should show something like this - "just 1.44.1"
+just --version
+```
+
 ### Install uv (Python Package Manager)
 We use `uv` for fast Python package management:
 
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
+
 
 ## 4. Security Configuration (UFW)
 
