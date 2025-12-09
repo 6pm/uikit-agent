@@ -41,9 +41,24 @@ dev = [
 line-length = 150
 
 [tool.ruff.lint]
-# Вмикаємо сортування імпортів (I), стиль коду (E, F) та оновлення до нового синтаксису(UP)
-select = ["E", "F", "I", "UP"]
+# E, F - standard errors (pyflakes, pycodestyle)
+# I - import sorting (isort)
+# UP - pyupgrade (automatic syntax updates)
+# B - flake8-bugbear - finds many hidden bugs
+select = ["E", "F", "I", "B", "UP"]
 
-# Налаштування сортування імпортів
+# Import sorting configuration
 [tool.ruff.lint.isort]
 known-first-party = ["agents", "tasks", "schemas" ]
+
+
+[tool.ruff.lint.flake8-bugbear]
+# Add a list of functions that can be called in arguments
+extend-immutable-calls = [
+    "fastapi.Depends",
+    "fastapi.Query",
+    "fastapi.Path",
+    "fastapi.Body",
+    "fastapi.Security",
+    "fastapi.Header",
+]
