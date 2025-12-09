@@ -9,7 +9,8 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 from agents.code_generator.prompts import SYSTEM_PROMPT_MOBILE, USER_MESSAGE_MOBILE_START
-from agents.code_generator.state import CodeGenState
+from agents.code_generator.state import CodeGenState, StatusEvent
+from app.services.status_reporter import StatusReporter
 from app.utils.code import clean_code_output
 from app.utils.logger_config import logger
 
@@ -23,14 +24,16 @@ class MobileCodeGenNode:
     the LLM to generate the corresponding React Native component code.
     """
 
-    def __init__(self, model: ChatGoogleGenerativeAI):
+    def __init__(self, model: ChatGoogleGenerativeAI, status_reporter: StatusReporter):
         """
         Initialize the MobileCodeGenNode.
 
         Args:
             model (ChatGoogleGenerativeAI): The language model instance used for code generation.
+            status_reporter: Status reporter instance.
         """
         self.model = model
+        self.status_reporter = status_reporter
 
     async def generate_code(self, state: CodeGenState) -> dict[str, Any]:
         """
@@ -64,17 +67,20 @@ class MobileCodeGenNode:
 
         response = await self.model.ainvoke(messages)
 
+        message = StatusEvent(
+            timestamp=datetime.now().isoformat(),
+            scope="mobile",
+            status="success",
+            message="Mobile code generated",
+            details=None,
+        )
+
+        await self.status_reporter.report(message)
+
+        # update State
         return {
             "mobile_code": clean_code_output(response.content),
-            "status_history": [
-                {
-                    "timestamp": datetime.now().isoformat(),
-                    "scope": "mobile",
-                    "status": "success",
-                    "message": "Mobile code generated",
-                    "details": None,
-                }
-            ],
+            "status_history": [message],
         }
 
     async def run_linter(self, state: CodeGenState) -> dict[str, Any]:
@@ -93,14 +99,14 @@ class MobileCodeGenNode:
         logger.info("Running fake linter for 1 second...")
         await asyncio.sleep(1)
 
-        return {
-            "status_history": [
-                {
-                    "timestamp": datetime.now().isoformat(),
-                    "scope": "mobile",
-                    "status": "success",
-                    "message": "Linting mobile code passed (fake) - delay 1 second",
-                    "details": None,
-                }
-            ]
-        }
+        message = StatusEvent(
+            timestamp=datetime.now().isoformat(),
+            scope="mobile",
+            status="success",
+            message="Linting mobile code passed (fake) - delay 1 second",
+            details=None,
+        )
+        await self.status_reporter.report(message)
+
+        # update State
+        return {"status_history": [message]}

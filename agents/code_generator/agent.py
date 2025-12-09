@@ -5,6 +5,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.graph import END, START, StateGraph
 
 from agents.code_generator.state import CodeGenState
+from app.services.status_reporter import StatusReporter
 from app.utils.logger_config import logger
 
 from .mcp_client import MCPClient
@@ -22,7 +23,7 @@ class CodeGeneratorAgent:
     It is responsible for initializing the system and launching the agent.
     """
 
-    def __init__(self):
+    def __init__(self, task_id: str):
         """Initialize agent with default values."""
         self.graph = None
         self.gemini_model = None
@@ -30,6 +31,9 @@ class CodeGeneratorAgent:
         # configure MCP clients
         self.mcp_web_client = MCPClient("node_modules/@patrianna/uikit/dist/mcp-server/server.js")
         self.mcp_mobile_client = None
+
+        # configure status reporter - save event for each step of the workflow
+        self.status_reporter = StatusReporter(task_id)
 
     async def __aenter__(self):
         """
@@ -69,14 +73,16 @@ class CodeGeneratorAgent:
         Includes stages: Validation -> Context -> (Web | Mobile) -> Linters -> Finish.
         """
         # 1. Initialize all nodes with dependencies
-        input_nodes = InputValidationNodes()
+        input_nodes = InputValidationNodes(status_reporter=self.status_reporter)
 
         # Pass both MCP clients
-        mcp_nodes = MCPContextRetrievalNode(web_client=self.mcp_web_client, mobile_client=self.mcp_mobile_client)
+        mcp_nodes = MCPContextRetrievalNode(
+            web_client=self.mcp_web_client, mobile_client=self.mcp_mobile_client, status_reporter=self.status_reporter
+        )
 
         # Pass the model (can bind tools if needed, but we use MCP separately)
-        web_codegen_node = WebCodeGenNode(self.gemini_model)
-        mobile_codegen_node = MobileCodeGenNode(self.gemini_model)
+        web_codegen_node = WebCodeGenNode(self.gemini_model, status_reporter=self.status_reporter)
+        mobile_codegen_node = MobileCodeGenNode(self.gemini_model, status_reporter=self.status_reporter)
 
         # 2. Create graph with typed state
         workflow = StateGraph(CodeGenState)

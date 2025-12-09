@@ -1,9 +1,14 @@
+"""
+Node for validating input data from Figma JSON and User Prompt.
+"""
+
 from datetime import datetime
 from typing import Any, Literal
 
 from langgraph.graph import END
 
-from agents.code_generator.state import CodeGenState
+from agents.code_generator.state import CodeGenState, StatusEvent
+from app.services.status_reporter import StatusReporter
 from app.utils.logger_config import logger
 
 
@@ -15,6 +20,15 @@ class InputValidationNodes:
     ensuring that the necessary data is present before proceeding to context retrieval
     and code generation.
     """
+
+    def __init__(self, status_reporter: StatusReporter):
+        """
+        Initialize the input validation node.
+
+        Args:
+            status_reporter: Status reporter instance.
+        """
+        self.status_reporter = status_reporter
 
     async def validate_input(self, state: CodeGenState) -> dict[str, Any]:
         """
@@ -31,30 +45,27 @@ class InputValidationNodes:
         """
         figma_data = state.get("figma_json")
 
-        if not figma_data:
-            return {
-                "status_history": [
-                    {
-                        "timestamp": datetime.now().isoformat(),
-                        "status": "error",
-                        "scope": "common",
-                        "message": "Missing Figma Data",
-                        "details": None,
-                    }
-                ]
-            }
+        if figma_data:
+            message = StatusEvent(
+                timestamp=datetime.now().isoformat(),
+                status="success",
+                scope="common",
+                message="Input validated successfully",
+                details=None,
+            )
+        else:
+            message = StatusEvent(
+                timestamp=datetime.now().isoformat(),
+                status="error",
+                scope="common",
+                message="Missing Figma Data",
+                details=None,
+            )
 
-        return {
-            "status_history": [
-                {
-                    "timestamp": datetime.now().isoformat(),
-                    "status": "success",
-                    "scope": "common",
-                    "message": "Input validated successfully",
-                    "details": None,
-                }
-            ]
-        }
+        await self.status_reporter.report(message)
+
+        # update State
+        return {"status_history": [message]}
 
     def should_continue(self, state: CodeGenState) -> Literal["retrieve_mcp_context", END]:
         """

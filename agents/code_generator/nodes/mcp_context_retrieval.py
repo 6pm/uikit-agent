@@ -1,8 +1,13 @@
+"""
+Node for retrieving context from MCP servers.
+"""
+
 import asyncio
 from datetime import datetime
 from typing import Any
 
-from agents.code_generator.state import CodeGenState
+from agents.code_generator.state import CodeGenState, StatusEvent
+from app.services.status_reporter import StatusReporter
 from app.utils.logger_config import logger
 
 
@@ -14,16 +19,18 @@ class MCPContextRetrievalNode:
     documentation for identified UI components for both Web and Mobile targets.
     """
 
-    def __init__(self, web_client, mobile_client):
+    def __init__(self, web_client, mobile_client, status_reporter: StatusReporter):
         """
         Initialize the context retrieval node.
 
         Args:
             web_client: MCP client instance for Web components.
             mobile_client: MCP client instance for Mobile components.
+            status_reporter: Status reporter instance.
         """
         self.web_client = web_client
         self.mobile_client = mobile_client
+        self.status_reporter = status_reporter
 
     async def retrieve_context(self, state: CodeGenState) -> dict[str, Any]:
         """
@@ -65,19 +72,20 @@ class MCPContextRetrievalNode:
             logger.error("Mobile MCP Error: %s", mobile_docs)
             mobile_docs = "Error retrieving Mobile docs."
 
+        success_message = StatusEvent(
+            timestamp=datetime.now().isoformat(),
+            scope="common",
+            status="success",
+            message=f"Documentation retrieved from Web {self.mobile_client is not None and 'and Mobile' or ''} sources",
+            details=None,
+        )
+        await self.status_reporter.report(success_message)
+
         # 4. Return data that will fan out to different graph branches
         return {
             "web_docs": web_docs,
             "mobile_docs": mobile_docs,
-            "status_history": [
-                {
-                    "timestamp": datetime.now().isoformat(),
-                    "scope": "common",
-                    "status": "success",
-                    "message": f"Documentation retrieved from Web {self.mobile_client is not None and 'and Mobile' or ''} sources",
-                    "details": None,
-                }
-            ],
+            "status_history": [success_message],
         }
 
     def _collect_component_names_from_json(self, node: dict, components: set[str]) -> list[str]:

@@ -8,6 +8,7 @@ from fastapi_limiter.depends import RateLimiter
 
 from app.core.dependencies import get_redis
 from app.utils.logger_config import logger
+from config import TASK_HISTORY_TTL
 from schemas.api.code_generation_types import CodeGenerationRequest, CodeGenerationResponse
 from tasks.code_generation_task import code_generation_task
 
@@ -75,8 +76,7 @@ async def generate_code(
                     "createdAt": datetime.now(UTC).isoformat(),
                 },
             )
-            # Set expiry for metadata (e.g., 7 days) to keep Redis clean
-            await redis_client.expire(task_meta_key, 60 * 60 * 24 * 7)
+            await redis_client.expire(task_meta_key, TASK_HISTORY_TTL)
 
             logger.info("main: [FASTAPI]: Saved task %s for user %s in Redis", task_id, request.userId)
 

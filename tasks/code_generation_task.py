@@ -67,7 +67,7 @@ async def _async_code_generation(request_data: CodeGenerationRequest, task_id: s
         # As soon as the code exits this block (successfully or with an error),
         # cleanup (closing connections, terminating processes) will automatically
         # trigger in the correct order.
-        async with CodeGeneratorAgent() as agent:
+        async with CodeGeneratorAgent(task_id) as agent:
             initial_state: CodeGenState = {
                 "task_id": task_id,
                 "figma_json": request_data.figmaJson,

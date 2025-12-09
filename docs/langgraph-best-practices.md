@@ -49,8 +49,8 @@ class CodeGeneratorAgent:
 # tasks/code_generation.py - Тонкий шар для Huey
 @huey.task()
 def generate_code_from_figma(request_data: dict):
-    agent = CodeGeneratorAgent.create()
-    return agent.generate(request_data)
+    async with CodeGeneratorAgent(task_id) as agent:
+        return agent.generate(request_data)
 
 # main.py - API endpoints
 @app.post("/generate-code")

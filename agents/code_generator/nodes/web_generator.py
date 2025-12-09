@@ -9,7 +9,8 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 from agents.code_generator.prompts import SYSTEM_PROMPT_WEB, USER_MESSAGE_WEB_START
-from agents.code_generator.state import CodeGenState
+from agents.code_generator.state import CodeGenState, StatusEvent
+from app.services.status_reporter import StatusReporter
 from app.utils.code import clean_code_output
 from app.utils.logger_config import logger
 
@@ -24,14 +25,16 @@ class WebCodeGenNode:
     It follows the Dependency Injection principle by receiving the model instance.
     """
 
-    def __init__(self, model: ChatGoogleGenerativeAI):
+    def __init__(self, model: ChatGoogleGenerativeAI, status_reporter: StatusReporter):
         """
         Initialize the WebCodeGenNode.
 
         Args:
             model (ChatGoogleGenerativeAI): The language model instance used for code generation.
+            status_reporter: Status reporter instance.
         """
         self.model = model
+        self.status_reporter = status_reporter
 
     async def generate_code(self, state: CodeGenState) -> dict[str, Any]:
         """
@@ -70,32 +73,35 @@ class WebCodeGenNode:
             response = await self.model.ainvoke(messages)
             generated_code = clean_code_output(response.content)
 
-            # 3. Return the result in the isolated 'web_code' field
+            # 3. Report success message step
+            message = StatusEvent(
+                timestamp=datetime.now().isoformat(),
+                scope="web",
+                status="success",
+                message="Web code generated",
+                details=None,
+            )
+            await self.status_reporter.report(message)
+
+            # 4. Return the result in the isolated 'web_code' field
             return {
                 "web_code": generated_code,
-                "status_history": [
-                    {
-                        "timestamp": datetime.now().isoformat(),
-                        "scope": "web",
-                        "status": "success",
-                        "message": "Web code generated",
-                        "details": None,
-                    }
-                ],
+                "status_history": [message],
             }
         except Exception as e:
             logger.error("Web Gen Error: %s", e, exc_info=True)
-            return {
-                "status_history": [
-                    {
-                        "timestamp": datetime.now().isoformat(),
-                        "scope": "web",
-                        "status": "error",
-                        "message": f"Generation failed: {str(e)}",
-                        "details": None,
-                    }
-                ]
-            }
+
+            error_message = StatusEvent(
+                timestamp=datetime.now().isoformat(),
+                scope="web",
+                status="error",
+                message=f"Generation failed: {str(e)}",
+                details=None,
+            )
+            await self.status_reporter.report(error_message)
+
+            # update State
+            return {"status_history": [error_message]}
 
     async def run_linter(self, state: CodeGenState) -> dict[str, Any]:
         """
@@ -113,14 +119,14 @@ class WebCodeGenNode:
         logger.info("Running fake linter for 1 second...")
         await asyncio.sleep(1)
 
-        return {
-            "status_history": [
-                {
-                    "timestamp": datetime.now().isoformat(),
-                    "scope": "web",
-                    "status": "success",
-                    "message": "Linting passed (fake) - delay 1 second",
-                    "details": None,
-                }
-            ]
-        }
+        message = StatusEvent(
+            timestamp=datetime.now().isoformat(),
+            scope="web",
+            status="success",
+            message="Linting passed (fake) - delay 1 second",
+            details=None,
+        )
+        await self.status_reporter.report(message)
+
+        # update State
+        return {"status_history": [message]}
