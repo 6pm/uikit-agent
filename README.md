@@ -220,6 +220,7 @@ uikit-agent/
 - **LangGraph** - Multi-stage AI agent workflows
 - **LangChain** - LLM integration (OpenAI/Anthropic)
 - **LangSmith** - Detailed logs for each agent call
+- **Sentry** - Error tracking service
 - **Pydantic** - Data validation and type safety
 - **Ruff** - Code formatting and linting
 - **uvloop** - Fastest event loop implementation

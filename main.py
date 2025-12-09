@@ -1,18 +1,14 @@
 """FastAPI REST API for handling background tasks with Huey."""
 
-import sentry_sdk
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.router import api_router
 from app.core.lifespan import lifespan_handler
+from app.core.sentry_config import init_sentry
 
-sentry_sdk.init(
-    dsn="https://c798fb65af9d161b2ddab291423a8a31@sentry.patrianna.com/1034",
-    # Add data like request headers and IP for users,
-    # see https://docs.sentry.io/platforms/python/data-management/data-collected/ for more info
-    send_default_pii=True,
-)
+# initialize Sentry for API
+init_sentry(service_name="api")
 
 app = FastAPI(
     title="UIKit Agent API",

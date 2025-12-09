@@ -21,6 +21,7 @@ import uvloop  # uvloop does not work on Windows
 from dotenv import load_dotenv
 from huey import RedisHuey
 
+from app.core.sentry_config import init_sentry
 from app.utils.logger_config import logger, setup_logging
 
 # Load environment variables from .env file
@@ -61,6 +62,9 @@ def startup_hook() -> None:
         RuntimeError: If Redis connection fails during initialization.
     """
     logger.info("Huey Worker: Bootstrapping...")
+
+    # 0. Initialize Sentry for Huey tasks
+    init_sentry(service_name="huey_worker")
 
     # 1. Configure uvloop (Only for Linux/macOS)
     # uvloop must be at the beginning of this function
