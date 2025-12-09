@@ -20,7 +20,7 @@ worker:
     REDIS_HOST=localhost uv run huey_consumer tasks.huey -w 2 -k thread
 
 # Format and fix code style (Ruff)
-fix:
+lint:
     uv run ruff format .
     uv run ruff check --fix .
 

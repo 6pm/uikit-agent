@@ -23,6 +23,10 @@ class CodeGenerationRequest(BaseModel):
 
 # ----
 class CodeGenerationResponse(BaseModel):
+    """
+    Response model for the '/generate-code' route.
+    """
+
     message: str
     task_id: str
     status: str

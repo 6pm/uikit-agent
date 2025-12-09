@@ -6,6 +6,7 @@ import redis.asyncio as redis
 from fastapi import FastAPI
 from fastapi_limiter import FastAPILimiter
 
+from app.core import database
 from app.utils.logger_config import logger
 from config import REDIS_HOST
 
@@ -16,6 +17,8 @@ from config import REDIS_HOST
 async def lifespan_handler(_app: FastAPI):
     """
     Manages the application lifecycle (Startup -> Run -> Shutdown).
+    Init Redis connection to global variable and check if it is connected on startup.
+    Add Rate Limiter to the application.
     """
 
     # ---------------------------------------------------------
@@ -28,12 +31,20 @@ async def lifespan_handler(_app: FastAPI):
     # 1. Create Redis connection.
     # We create a connection pool to be used for the Rate Limiter.
     # decode_responses=True means we get strings (str), not bytes.
-    redis_connection = redis.from_url(f"redis://{REDIS_HOST}:6379", encoding="utf-8", decode_responses=True)
+    database.redis_client = redis.from_url(f"redis://{REDIS_HOST}:6379", encoding="utf-8", decode_responses=True)
 
-    # 2. Initialize Rate Limiter.
+    # 2. Check if Redis connection
+    try:
+        await database.redis_client.ping()
+        logger.info("Redis connected successfully")
+    except Exception as e:
+        logger.error("Redis connection failed: %s", e)
+        raise e
+
+    # 3. Initialize Rate Limiter.
     # FastAPILimiter is a global object (Singleton), it needs Redis to
     # know where to store request counters.
-    await FastAPILimiter.init(redis_connection)
+    await FastAPILimiter.init(database.redis_client)
 
     logger.info("FastAPILimiter initialized with Redis at %s", REDIS_HOST)
 
@@ -54,6 +65,6 @@ async def lifespan_handler(_app: FastAPI):
     # 3. Close Redis connection.
     # This is critical! If the connection is not closed, it might "hang"
     # on the Redis server side as a zombie connection, clogging memory.
-    await redis_connection.close()
+    await database.redis_client.close()
 
     logger.info("Redis connection closed safely")
