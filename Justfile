@@ -39,3 +39,17 @@ up:
 # Docker: Follow logs for all services
 logs:
     {{docker_cmd}} logs -f
+
+
+# This command is created to rebuild production on Hetzner VPS with the latest changes
+# You may need to manually copy keys to the .env file
+run-deploy:
+    # 1. Get fresh code
+    git pull
+
+    # 2. Rebuild and restart
+    # --remove-orphans will remove containers that no longer exist in docker-compose
+    {{docker_cmd}} up -d --build --remove-orphans
+
+    # 3. Clean old images to avoid filling up disk (very important for VPS!)
+    {{docker_cmd}} image prune -f
