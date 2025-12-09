@@ -14,8 +14,8 @@ from config import huey
 from schemas.api.code_generation_types import CodeGenerationRequest, CodeGenTaskResult
 
 
-@huey.task()
-def code_generation_task(request_data: dict):
+@huey.task(context=True)
+def code_generation_task(request_data: dict, task=None):
     """
     Huey task wrapper for code generation.
 
@@ -38,7 +38,7 @@ def code_generation_task(request_data: dict):
 
     try:
         # Huey tasks must be synchronous, but we can run async code inside
-        return asyncio.run(_async_code_generation(request_data_typed))
+        return asyncio.run(_async_code_generation(request_data_typed, task.id))
 
     except Exception as e:
         error_msg = f"code_generation_task: Code generation task failed: {e}"
@@ -48,7 +48,7 @@ def code_generation_task(request_data: dict):
         return {"success": False, "errors": [error_msg]}
 
 
-async def _async_code_generation(request_data: CodeGenerationRequest) -> CodeGenTaskResult:
+async def _async_code_generation(request_data: CodeGenerationRequest, task_id: str) -> CodeGenTaskResult:
     """
     Asynchronous implementation of the code generation logic.
 
@@ -69,6 +69,7 @@ async def _async_code_generation(request_data: CodeGenerationRequest) -> CodeGen
         # trigger in the correct order.
         async with CodeGeneratorAgent() as agent:
             initial_state: CodeGenState = {
+                "task_id": task_id,
                 "figma_json": request_data.figmaJson,
                 "user_prompt": request_data.userPrompt,
                 "component_name": request_data.componentName,

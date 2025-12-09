@@ -30,6 +30,7 @@ class CodeGenState(TypedDict):
     State for the code generation workflow.
 
     Attributes:
+        task_id: ID of the task in Redis.
         figma_json: The input Figma JSON data (immutable).
         user_prompt: The user's prompt or instructions.
         web_docs: Context documentation for web code generation.
@@ -39,6 +40,7 @@ class CodeGenState(TypedDict):
         mobile_code: The generated mobile code.
     """
 
+    task_id: str
     # Input data (immutable)
     figma_json: dict
     component_name: str
