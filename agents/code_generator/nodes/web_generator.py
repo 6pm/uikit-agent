@@ -10,6 +10,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 
 from agents.code_generator.prompts import SYSTEM_PROMPT_WEB, USER_MESSAGE_WEB_START
 from agents.code_generator.state import CodeGenState
+from app.utils.code import clean_code_output
 from app.utils.logger_config import logger
 
 
@@ -67,7 +68,7 @@ class WebCodeGenNode:
         try:
             # 2. Invoke the model
             response = await self.model.ainvoke(messages)
-            generated_code = response.content
+            generated_code = clean_code_output(response.content)
 
             # 3. Return the result in the isolated 'web_code' field
             return {

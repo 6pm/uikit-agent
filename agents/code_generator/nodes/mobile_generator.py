@@ -10,6 +10,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 
 from agents.code_generator.prompts import SYSTEM_PROMPT_MOBILE, USER_MESSAGE_MOBILE_START
 from agents.code_generator.state import CodeGenState
+from app.utils.code import clean_code_output
 from app.utils.logger_config import logger
 
 
@@ -64,7 +65,7 @@ class MobileCodeGenNode:
         response = await self.model.ainvoke(messages)
 
         return {
-            "mobile_code": response.content,
+            "mobile_code": clean_code_output(response.content),
             "status_history": [
                 {
                     "timestamp": datetime.now().isoformat(),

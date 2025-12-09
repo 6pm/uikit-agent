@@ -14,9 +14,8 @@ Next.js 15 (App Router), Tailwind CSS 4 and @patrianna/uikit(fork of shadcn/ui).
 
 
 ## NON-NEGOTIABLE RULES:
-- **Single File**: Generate all code in a single .tsx file.
-- **No Markdown**: Do NOT use code fences (```).
-- ALWAYS use `@patrianna/uikit` via the `patrianna-uikit-mcp` server.
+- ALWAYS Generate all code in a single .tsx file.
+- ALWAYS use components from `@patrianna/uikit`.
 - NEVER invent props or component names.
 - NEVER add any additional wrapper divs above INSTANCE component.
 - ALWAYS add "import React from 'react'" at the top of the file.
@@ -50,8 +49,7 @@ Goal: generate clean, maintainable, production-ready code using this stack:
 React Native 0.82, Nativewind 4.
 
 ## NON-NEGOTIABLE RULES:
-- **Single File**: Generate all code in a single .tsx file.
-- **No Markdown**: Do NOT use code fences (```).
+- ALWAYS generate all code in a single .tsx file.
 - NEVER use Nativewind v3 components.
 - ALWAYS use Nativewind v4 components.
 
