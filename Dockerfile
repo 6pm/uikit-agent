@@ -1,5 +1,21 @@
 # Use official Python slim image for smaller final image size
-FROM python:3.11-slim
+FROM python:3.12-slim
+
+
+# --------------------------------------------------------------
+# 1. System Dependencies (NEW)
+# --------------------------------------------------------------
+# Install git and ssh-client (needed for cloning via git@...)
+# Do this at the very beginning so this layer gets cached and doesn't rebuild
+# when Python/Node code or dependencies change.
+RUN apt-get update && apt-get install -y \
+    git \
+    openssh-client \
+    && rm -rf /var/lib/apt/lists/*
+
+# --------------------------------------------------------------
+# 2. Tools Setup (Node.js & uv)
+# --------------------------------------------------------------
 
 # Copy Node.js binaries and libraries from the official image
 # This is cleaner and lighter than installing via apt-get
@@ -21,7 +37,7 @@ ENV UV_COMPILE_BYTECODE=1
 
 
 # --------------------------------------------------------------
-# MCP Server Configuration
+# 3. MCP Server Configuration (Node.js deps)
 # --------------------------------------------------------------
 
 # Copy npm configuration
@@ -39,15 +55,12 @@ RUN npx google-artifactregistry-auth
 COPY package*.json ./
 RUN npm install
 
-
 # Security: Remove the temporary service account key file
 RUN rm /tmp/key.json
 
-# --------------------------------------------------------------
-
 
 # --------------------------------------------------------------
-# Python application setup
+# 4. Python application setup
 # --------------------------------------------------------------
 
 # Copy dependency definition files first
