@@ -1,4 +1,5 @@
 import os
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -45,14 +46,28 @@ class RepositoryWorkspace:
 
     def prepare_repo(self, branch_name: str):
         """Initializes workspace: clones repo, installs dependencies, creates branch."""
-
-        # Check: If folder exists but it's not a git repo (bitbucket folder) -> delete it
+        # --------------------------------------------------------------
+        # Check for corrupted repo TEMPORARY FIX
+        # --------------------------------------------------------------
         git_dir = self.local_path / ".git"
-        if self.local_path.exists() and not git_dir.exists():
-            logger.warning(f"Found corrupted repo dir at {self.local_path}. Cleaning up...")
-            import shutil
 
-            shutil.rmtree(self.local_path)
+        # Перевіряємо, чи є сміття (файли є, а .git папки немає)
+        has_files = any(self.local_path.iterdir()) if self.local_path.exists() else False
+        is_corrupted = self.local_path.exists() and has_files and not git_dir.exists()
+
+        if is_corrupted:
+            logger.warning(f"Found corrupted repo dir at {self.local_path}. Cleaning contents...")
+
+            # 👇 ВАЖЛИВО: Видаляємо вміст, а не саму папку!
+            for item in self.local_path.iterdir():
+                try:
+                    if item.is_dir():
+                        shutil.rmtree(item)
+                    else:
+                        item.unlink()
+                except Exception as e:
+                    logger.warning(f"Failed to delete {item}: {e}")
+        # --------------------------------------------------------------
 
         # 1. Clone & Bootstrap (if directory doesn't exist)
         if not (self.local_path / ".git").exists():
