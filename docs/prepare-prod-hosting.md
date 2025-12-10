@@ -116,7 +116,18 @@ source .venv/bin/activate
 uv sync
 ```
 
-## 6. Deployment
+
+## 6. Setup web and mobile projects
+Generate ssh keys on VPS server:
+```sh
+ssh-keygen -t ed25519 -C "agent@uikit" -f ~/.ssh/bitbucket_agent_key
+```
+then add public key `bitbucket_agent_key.pub` to preview bitbucket repositories.
+Make sure that GIT_SSH_KEY_PATH env variable on VPS has correct path.
+
+
+
+## 7. Deployment
 
 Build and start the containers using Docker Compose:
 
@@ -124,7 +135,7 @@ Build and start the containers using Docker Compose:
 docker compose up -d --build
 ```
 
-## 7. Verification
+## 8. Verification
 
 Check the status of your containers:
 

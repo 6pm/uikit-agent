@@ -46,9 +46,17 @@ class CodeGenState(TypedDict):
     component_name: str
     user_prompt: str | None
 
-    # Context (populated by Context Retrieval)
+    # Context (populated by MCP Retrieval)
     web_docs: str | None
     mobile_docs: str | None
+
+    # Linting results Web
+    web_lint_errors: str | None
+    web_iterations: int  # Counter of attempts (Default: 0) max - 3
+
+    # Linting results Mobile
+    mobile_lint_errors: str | None
+    mobile_iterations: int  # Counter of attempts (Default: 0) max - 3
 
     # List accumulating history. operator.add appends new elements to the existing list.
     status_history: Annotated[list[StatusEvent], operator.add]

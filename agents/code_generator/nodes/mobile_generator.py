@@ -72,7 +72,6 @@ class MobileCodeGenNode:
             scope="mobile",
             status="success",
             message="Mobile code generated",
-            details=None,
         )
 
         await self.status_reporter.report(message)
@@ -104,7 +103,6 @@ class MobileCodeGenNode:
             scope="mobile",
             status="success",
             message="Linting mobile code passed (fake) - delay 1 second",
-            details=None,
         )
         await self.status_reporter.report(message)
 

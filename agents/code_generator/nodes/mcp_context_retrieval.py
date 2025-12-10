@@ -77,7 +77,6 @@ class MCPContextRetrievalNode:
             scope="common",
             status="success",
             message=f"Documentation retrieved from Web {self.mobile_client is not None and 'and Mobile' or ''} sources",
-            details=None,
         )
         await self.status_reporter.report(success_message)
 

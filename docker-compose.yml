@@ -77,6 +77,11 @@ services:
       - "traefik.http.routers.api.entrypoints=websecure"
       - "traefik.http.routers.api.tls.certresolver=myresolver"
       - "traefik.http.services.api.loadbalancer.server.port=8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000"]
+      interval: 20s
+      timeout: 10s
+      retries: 3
 
   # Service 3: Worker
   worker:
@@ -89,10 +94,24 @@ services:
     environment:
       - REDIS_HOST=redis
       - ENV=prod
+      # Paths to repositories with preview code (for config.py)
+      - WEB_REPO_PATH=/repos/web
+      - MOBILE_REPO_PATH=/repos/mobile
+      # Tell Python code where to look for the SSH key for Bitbucket INSIDE the container
+      - GIT_SSH_KEY_PATH=/root/.ssh/id_ed25519
     depends_on:
       - redis
     networks:
       - my_network
+    volumes:
+      # save web and mobile repos data
+      - web_repo_data:/repos/web
+      - mobile_repo_data:/repos/mobile
+      # SSH key for Bitbucket (make sure it exists on VPS)
+      # LEFT: Your actual key on VPS (~/.ssh/bitbucket_agent_key)
+      # RIGHT: Where we put it in the container (/root/.ssh/id_ed25519)
+      # We rename it "on the fly" for the container
+      - ~/.ssh/bitbucket_agent_key:/root/.ssh/id_ed25519:ro
 
 networks:
   my_network:
@@ -104,3 +123,5 @@ volumes:
     driver: local
   traefik_data:
     driver: local
+  web_repo_data:
+  mobile_repo_data:

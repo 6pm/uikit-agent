@@ -12,9 +12,9 @@ You are a code generation engine. Your output is piped directly into a file comp
 Goal: generate clean, maintainable, production-ready code using this stack:
 Next.js 15 (App Router), Tailwind CSS 4 and @patrianna/uikit(fork of shadcn/ui).
 
-
 ## NON-NEGOTIABLE RULES:
 - ALWAYS Generate all code in a single .tsx file.
+- ALWAYS use **export default** for the main component.
 - ALWAYS use components from `@patrianna/uikit`.
 - NEVER invent props or component names.
 - NEVER add any additional wrapper divs above INSTANCE component.
@@ -37,6 +37,37 @@ Below you will find the JSON structure describing the component hierarchy and pr
 Usually Figma nodes with type: 'INSTANCE' corresponds to this components, node.name matches component name from `@patrianna/uikit`.
 And "componentProperties" field corresponds to react props for the component.
 """
+
+FIX_LINTER_PROMPT_WEB_SYSTEM = """
+You are an expert React Developer. Your task is to FIX the code based on linter errors.
+
+STRICT IMPORT RULES:
+NO barrel imports from '@patrianna/uikit'.
+ALWAYS use deep imports.
+Expected: import { TypographyH1, TypographyP } from '@patrianna/uikit/typography'
+Forbidden: import { TypographyH1, TypographyP } from '@patrianna/uikit'
+"""
+
+
+def FIX_LINTER_PROMPT_WEB(code: str, linter_errors: str) -> str:
+    return f"""
+      The following React code has linter errors.
+      Please fix ALL errors and return the FULL corrected code.
+
+      ### Current Code:
+      ```tsx
+      {code}
+      ```
+
+      ### Linter Errors:
+      {linter_errors}
+
+      ### Requirements:
+      1. Return ONLY the code inside ```tsx``` blocks.
+      2. Maintain all existing functionality.
+      3. Fix all import errors and type errors.
+   """
+
 
 # ------------------------------------------------------------
 # Mobile Code Generation Prompts

@@ -7,7 +7,7 @@ and the asynchronous LangGraph agent.
 
 import asyncio
 
-from agents.code_generator import CodeGeneratorAgent
+from agents.code_generator.agent import CodeGeneratorAgent
 from agents.code_generator.state import CodeGenState
 from app.utils.logger_config import logger
 from config import huey
@@ -74,10 +74,17 @@ async def _async_code_generation(request_data: CodeGenerationRequest, task_id: s
                 "user_prompt": request_data.userPrompt,
                 "component_name": request_data.componentName,
                 "status_history": [],
+                # MCP context
                 "web_docs": None,
                 "mobile_docs": None,
+                # generated code
                 "web_code": None,
                 "mobile_code": None,
+                # linting
+                "web_lint_errors": None,
+                "web_iterations": 0,
+                "mobile_lint_errors": None,
+                "mobile_iterations": 0,
             }
 
             logger.info("Invoking graph for task...")

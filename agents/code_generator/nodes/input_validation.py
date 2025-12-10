@@ -51,7 +51,6 @@ class InputValidationNodes:
                 status="success",
                 scope="common",
                 message="Input validated successfully",
-                details=None,
             )
         else:
             message = StatusEvent(
@@ -59,7 +58,6 @@ class InputValidationNodes:
                 status="error",
                 scope="common",
                 message="Missing Figma Data",
-                details=None,
             )
 
         await self.status_reporter.report(message)

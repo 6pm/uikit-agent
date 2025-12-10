@@ -53,3 +53,7 @@ run-deploy:
 
     # 3. Clean old images to avoid filling up disk (very important for VPS!)
     docker image prune -f
+
+# Clean __pycache__ folders
+clean-pycache:
+    find . -name "__pycache__" -type d -exec rm -rf {} +
