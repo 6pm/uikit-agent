@@ -78,10 +78,11 @@ services:
       - "traefik.http.routers.api.tls.certresolver=myresolver"
       - "traefik.http.services.api.loadbalancer.server.port=8000"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000"]
-      interval: 20s
-      timeout: 10s
-      retries: 3
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()"]
+      interval: 10s    # How often to check
+      timeout: 5s      # How long to wait for response
+      retries: 5       # Number of failures before killing the container
+      start_period: 15s # Grace period for server startup before first check
 
   # Service 3: Worker
   worker:
