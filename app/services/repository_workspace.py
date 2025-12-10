@@ -21,8 +21,9 @@ class RepositoryWorkspace:
 
         if git_ssh_key_path:
             logger.info(f"Workspace: Using custom SSH key: {git_ssh_key_path}")
-            self.git_env["GIT_SSH_COMMAND"] = f"ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i {git_ssh_key_path}"
+            self.git_env["GIT_SSH_COMMAND"] = f"ssh -o StrictHostKeyChecking=no -i {git_ssh_key_path}"
         else:
+            logger.warning("Workspace: SSH key path NOT provided. Using default SSH behavior.")
             self.git_env["GIT_SSH_COMMAND"] = "ssh -o StrictHostKeyChecking=no"
 
     # =========================================================================
