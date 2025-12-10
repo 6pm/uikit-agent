@@ -49,7 +49,7 @@ run-deploy:
 
     # 2. Rebuild and restart
     # --remove-orphans will remove containers that no longer exist in docker-compose
-    {{docker_cmd}} up -d --build --remove-orphans
+    {{docker_cmd}} up -d --build --remove-orphans --wait
 
     # 3. Clean old images to avoid filling up disk (very important for VPS!)
     docker image prune -f
