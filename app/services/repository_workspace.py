@@ -2,9 +2,8 @@ import os
 import subprocess
 from pathlib import Path
 
+from app.core.settings import settings
 from app.utils.logger_config import logger
-
-EMAIL_WITH_VERCEL_ACCESS = os.environ.get("EMAIL_WITH_VERCEL_ACCESS")
 
 
 class RepositoryWorkspace:
@@ -119,6 +118,6 @@ class RepositoryWorkspace:
             return
 
         # here we add the author to the commit to trigger the rebuild in Vercel
-        self._run_cmd(["git", "commit", "-m", message, "--author", f"Slava <{EMAIL_WITH_VERCEL_ACCESS}>"])
+        self._run_cmd(["git", "commit", "-m", message, "--author", f"Slava <{settings.EMAIL_WITH_VERCEL_ACCESS}>"])
         self._run_cmd(["git", "push", "origin", branch_name, "--force"])
         logger.info(f"Pushed to {branch_name}")

@@ -2,7 +2,7 @@
 
 import redis.asyncio as redis
 
-from config import REDIS_HOST
+from app.core.settings import settings
 
 # Global variable
 redis_client: redis.Redis | None = None
@@ -20,7 +20,7 @@ def init_redis_client() -> redis.Redis:
         return redis_client
 
     redis_client = redis.from_url(
-        f"redis://{REDIS_HOST}:6379",
+        f"redis://{settings.REDIS_HOST}:6379",
         encoding="utf-8",
         decode_responses=True,  # decode_responses=True means we get strings (str), not bytes.
         # Important for worker: pool configuration

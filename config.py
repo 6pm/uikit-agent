@@ -15,31 +15,24 @@ Note: uvloop does not work on Windows, so this module is designed for Unix-like 
 """
 
 import asyncio
-import os
 
 import uvloop  # uvloop does not work on Windows
 from dotenv import load_dotenv
 from huey import RedisHuey
 
 from app.core.sentry_config import init_sentry
+from app.core.settings import settings
 from app.utils.logger_config import logger, setup_logging
 
 # Load environment variables from .env file
 load_dotenv()
 
-# Docker Compose will create a service named 'redis'
-# We get this name from the environment variable,
-# or use 'redis' as default.
-REDIS_HOST = os.environ.get("REDIS_HOST", "redis")
-
-# Task History TTL in seconds (default: 14 days)
-TASK_HISTORY_TTL = int(os.environ.get("TASK_HISTORY_TTL", 60 * 60 * 24 * 14))
 
 # Configure logging
 setup_logging()
 
 # Create Huey instance with logging enabled
-huey = RedisHuey("my_app", host=REDIS_HOST, port=6379)
+huey = RedisHuey("my_app", host=settings.REDIS_HOST, port=6379)
 
 
 @huey.on_startup()

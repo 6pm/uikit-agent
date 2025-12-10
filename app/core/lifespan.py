@@ -6,8 +6,8 @@ from fastapi import FastAPI
 from fastapi_limiter import FastAPILimiter
 
 from app.core import database
+from app.core.settings import settings
 from app.utils.logger_config import logger
-from config import REDIS_HOST
 
 
 # @asynccontextmanager transforms the function into a context manager.
@@ -43,7 +43,7 @@ async def lifespan_handler(_app: FastAPI):
     # know where to store request counters.
     await FastAPILimiter.init(redis_client)
 
-    logger.info("FastAPILimiter initialized with Redis at %s", REDIS_HOST)
+    logger.info("FastAPILimiter initialized with Redis at %s", settings.REDIS_HOST)
 
     # ---------------------------------------------------------
     # PHASE 2: YIELD (Running)

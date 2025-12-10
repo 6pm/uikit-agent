@@ -6,8 +6,8 @@ import json
 
 from agents.code_generator.state import StatusEvent
 from app.core.database import get_redis_client
+from app.core.settings import settings
 from app.utils.logger_config import logger
-from config import TASK_HISTORY_TTL
 
 
 class StatusReporter:
@@ -45,6 +45,6 @@ class StatusReporter:
         # 1. Append the event to the end of the list (History Log)
         await client.rpush(self.history_key, json.dumps(status_event))
         # Set TTL so history doesn't persist forever
-        await client.expire(self.history_key, TASK_HISTORY_TTL)
+        await client.expire(self.history_key, settings.TASK_HISTORY_TTL)
 
         logger.info("StatusReporter: Event %s reported to Redis", status_event)

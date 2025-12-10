@@ -9,10 +9,10 @@ from agents.code_generator.nodes.input_validation import InputValidationNodes
 from agents.code_generator.nodes.mcp_context_retrieval import MCPContextRetrievalNode
 from agents.code_generator.nodes.web_nodes import WebPipelineNodes
 from agents.code_generator.state import CodeGenState
+from app.core.settings import settings
 from app.services.repository_workspace import RepositoryWorkspace
 from app.services.status_reporter import StatusReporter
 from app.utils.logger_config import logger
-from config import GIT_SSH_KEY_PATH, MOBILE_REPO_PATH, MOBILE_REPO_URL, WEB_REPO_PATH, WEB_REPO_URL
 
 
 class CodeGeneratorAgent:
@@ -35,14 +35,14 @@ class CodeGeneratorAgent:
 
         # classes to work with repositories - clone, update files, commit.
         self.web_workspace = RepositoryWorkspace(
-            repo_url=WEB_REPO_URL,
-            local_path=WEB_REPO_PATH,
-            git_ssh_key_path=GIT_SSH_KEY_PATH,
+            repo_url=settings.WEB_REPO_URL,
+            local_path=settings.WEB_REPO_PATH,
+            git_ssh_key_path=settings.GIT_SSH_KEY_PATH,
         )
         self.mobile_workspace = RepositoryWorkspace(
-            repo_url=MOBILE_REPO_URL,
-            local_path=MOBILE_REPO_PATH,
-            git_ssh_key_path=GIT_SSH_KEY_PATH,
+            repo_url=settings.MOBILE_REPO_URL,
+            local_path=settings.MOBILE_REPO_PATH,
+            git_ssh_key_path=settings.GIT_SSH_KEY_PATH,
         )
 
     async def __aenter__(self):
