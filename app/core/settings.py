@@ -15,6 +15,9 @@ class Settings(BaseSettings):
     # --- Huey Settings ---
     TASK_HISTORY_TTL: int = 60 * 60 * 24 * 14  # 14 days default
 
+    # --- Sentry Settings ---
+    SENTRY_DSN: str | None = None
+
     # --- Git / Repo Settings ---
     # Path to SSH key (might be empty on local development)
     GIT_SSH_KEY_PATH: str | None = None
