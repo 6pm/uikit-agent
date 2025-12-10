@@ -46,6 +46,14 @@ class RepositoryWorkspace:
     def prepare_repo(self, branch_name: str):
         """Initializes workspace: clones repo, installs dependencies, creates branch."""
 
+        # Check: If folder exists but it's not a git repo (bitbucket folder) -> delete it
+        git_dir = self.local_path / ".git"
+        if self.local_path.exists() and not git_dir.exists():
+            logger.warning(f"Found corrupted repo dir at {self.local_path}. Cleaning up...")
+            import shutil
+
+            shutil.rmtree(self.local_path)
+
         # 1. Clone & Bootstrap (if directory doesn't exist)
         if not (self.local_path / ".git").exists():
             logger.info(f"Cloning {self.repo_url} into {self.local_path}...")

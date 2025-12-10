@@ -85,7 +85,10 @@ class WebPipelineNodes:
                 message=f"Repo preparation failed: {str(e)}",
             )
             await self.reporter.report(error_msg)
-            return {"status_history": [error_msg]}
+
+            # stop the workflow with the error
+            raise e
+            # return {"status_history": [error_msg], "error": "REPO_PREP_FAILED"}
 
     # --- NODE 2: Generate Code (LLM) ---
     async def generate_code(self, state: CodeGenState) -> dict[str, Any]:
