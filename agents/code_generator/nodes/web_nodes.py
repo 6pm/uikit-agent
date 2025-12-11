@@ -74,6 +74,15 @@ class WebPipelineNodes:
             # Execute heavy IO operation in a separate thread
             await anyio.to_thread.run_sync(self.workspace.prepare_repo, branch_name)
 
+            await self.reporter.report(
+                StatusEvent(
+                    timestamp=datetime.now().isoformat(),
+                    scope="web_git",
+                    status="success",
+                    message="Web Repository prepared",
+                )
+            )
+
             return {"web_iterations": 0}  # Reset the attempt counter
 
         except Exception as e:
