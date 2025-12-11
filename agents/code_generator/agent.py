@@ -1,6 +1,7 @@
 """Code Generator Agent - orchestrates the code generation workflow."""
 
-from huey.utils import os
+from typing import Literal
+
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.graph import END, START, StateGraph
 
@@ -52,24 +53,30 @@ class CodeGeneratorAgent:
         We don't use __init__ because we want to use the context manager pattern.
         Everything that needs an Event Loop MUST be created here.
         """
-        # 1. Connect MCP clients (either via exit stack or manual enter)
-        # Here we cascade the aenter calls for clients
-        await self.mcp_web_client.__aenter__()
-        if self.mcp_mobile_client:
-            await self.mcp_mobile_client.__aenter__()
+        try:
+            # 1. Connect MCP clients (either via exit stack or manual enter)
+            # Here we cascade the aenter calls for clients
+            await self.mcp_web_client.__aenter__()
+            if self.mcp_mobile_client:
+                await self.mcp_mobile_client.__aenter__()
 
-        # 2. Сonfigure status reporter - save event for each step of the workflow
-        self.status_reporter = StatusReporter(self.task_id)
+            # 2. Сonfigure status reporter - save event for each step of the workflow
+            self.status_reporter = StatusReporter(self.task_id)
 
-        # 3. Initialize the model
-        await self.init_gemini_model()
+            # 3. Initialize the model
+            await self._init_gemini_model()
 
-        # 4. Build the graph (safe now because MCPs are connected)
-        await self.build_graph()
+            # 4. Build the graph (safe now because MCPs are connected)
+            await self._build_graph()
 
-        return self
+            return self
 
-    async def init_gemini_model(self):
+        except Exception as e:
+            # If initialization failed, guarantee to close resources
+            logger.error(f"Failed to initialize CodeGeneratorAgent: {e}")
+            raise e
+
+    async def _init_gemini_model(self):
         """
         Initialize Gemini model.
         In the future there will be several node classes (ValidationNodes, RefactoringNodes).
@@ -77,12 +84,12 @@ class CodeGeneratorAgent:
         rather than having each node create its own connection.
         """
         self.gemini_model = ChatGoogleGenerativeAI(
-            model=os.getenv("MODEL_CODEGEN") or "gemini-2.5-pro",
+            model=settings.MODEL_CODEGEN,
             temperature=0.2,
             max_retries=2,
         )
 
-    async def build_graph(self):
+    async def _build_graph(self):
         """
         Builds the Directed Acyclic Graph (DAG) for code generation.
         Includes stages: Validation -> Context -> (Web | Mobile) -> Linters -> Finish.
@@ -117,22 +124,6 @@ class CodeGeneratorAgent:
         workflow.add_node("validate_input", input_nodes.validate_input)
         workflow.add_node("retrieve_mcp_context", mcp_nodes.retrieve_context)
 
-        # --- WEB BRANCH NODES ---
-        workflow.add_node("prepare_web", web_nodes.prepare_repo)
-        workflow.add_node("generate_web", web_nodes.generate_code)
-        workflow.add_node("write_web", web_nodes.write_file)
-        workflow.add_node("lint_web", web_nodes.run_linter)
-        workflow.add_node("fix_web", web_nodes.fix_code)
-        workflow.add_node("push_web", web_nodes.push_code)
-
-        # # Mobile Branch
-        workflow.add_node("prepare_mobile", mobile_nodes.prepare_repo)
-        workflow.add_node("generate_mobile", mobile_nodes.generate_code)
-        workflow.add_node("write_mobile", mobile_nodes.write_file)
-        workflow.add_node("lint_mobile", mobile_nodes.run_linter)
-        workflow.add_node("fix_mobile", mobile_nodes.fix_code)
-        workflow.add_node("push_mobile", mobile_nodes.push_code)
-
         # --- Build Edges between nodes ---
 
         # Start -> Validation phase
@@ -148,65 +139,59 @@ class CodeGeneratorAgent:
             },
         )
 
-        # FORK: After context, run both branches in parallel
-        workflow.add_edge("retrieve_mcp_context", "prepare_web")
-        workflow.add_edge("retrieve_mcp_context", "prepare_mobile")
+        # Add subgraphs for web and mobile
+        # Generic Branch Building
+        # Add Web branch
+        self._add_pipeline_branch(workflow, nodes=web_nodes, prefix="web", start_node="retrieve_mcp_context")
 
-        # WEB EDGES
-        # --------------------------------------------------------------
-
-        # Linear Flow: Prepare -> Generate -> Write -> Lint
-        workflow.add_edge("prepare_web", "generate_web")
-        workflow.add_edge("generate_web", "write_web")
-        workflow.add_edge("write_web", "lint_web")
-
-        # LOOP: Lint -> (Check) -> Fix -> Write -> Lint
-        workflow.add_conditional_edges(
-            "lint_web",
-            web_nodes.should_continue,  # Router function
-            {
-                "fix_web": "fix_web",  # go to fix code
-                "push_web": "push_web",  # go to push code when no errors or max iterations reached
-            },
-        )
-
-        # Closing the loop: After Fix -> Write again (to disk) -> Lint again
-        workflow.add_edge("fix_web", "write_web")
-
-        # Finish: Push code and end the workflow
-        workflow.add_edge("push_web", END)
-        # END WEB EDGES
-        # --------------------------------------------------------------
-
-        # MOBILE EDGES
-        # --------------------------------------------------------------
-
-        # Linear Flow: Prepare -> Generate -> Write -> Lint
-        workflow.add_edge("prepare_mobile", "generate_mobile")
-        workflow.add_edge("generate_mobile", "write_mobile")
-        workflow.add_edge("write_mobile", "lint_mobile")
-
-        # LOOP: Lint -> (Check) -> Fix -> Write -> Lint
-        workflow.add_conditional_edges(
-            "lint_mobile",
-            mobile_nodes.should_continue,  # Router function
-            {
-                "fix_mobile": "fix_mobile",  # go to fix code
-                "push_mobile": "push_mobile",  # go to push code when no errors or max iterations reached
-            },
-        )
-
-        # Closing the loop: After Fix -> Write again (to disk) -> Lint again
-        workflow.add_edge("fix_mobile", "write_mobile")
-
-        # Finish: Push code and end the workflow
-        workflow.add_edge("push_mobile", END)
-        # END MOBILE EDGES
-        # --------------------------------------------------------------
+        # Додаємо Mobile гілку (якщо треба)
+        self._add_pipeline_branch(workflow, nodes=mobile_nodes, prefix="mobile", start_node="retrieve_mcp_context")
 
         # 3. Compile LangGraph workflow graph
         self.graph = workflow.compile()
         logger.info("CodeGen Graph built successfully.")
+
+    def _add_pipeline_branch(self, workflow: StateGraph, nodes, prefix: Literal["web", "mobile"], start_node: str):
+        """
+        Generic method to build a pipeline branch (Web or Mobile).
+        Removes code duplication.
+        """
+        # Define node names dynamically
+        n_prepare = f"prepare_{prefix}"
+        n_generate = f"generate_{prefix}"
+        n_write = f"write_{prefix}"
+        n_lint = f"lint_{prefix}"
+        n_fix = f"fix_{prefix}"
+        n_push = f"push_{prefix}"
+
+        # Add Nodes
+        workflow.add_node(n_prepare, nodes.prepare_repo)
+        workflow.add_node(n_generate, nodes.generate_code)
+        workflow.add_node(n_write, nodes.write_file)
+        workflow.add_node(n_lint, nodes.run_linter)
+        workflow.add_node(n_fix, nodes.fix_code)
+        workflow.add_node(n_push, nodes.push_code)
+
+        # Add Edges
+        # Connect start node to this branch
+        workflow.add_edge(start_node, n_prepare)
+
+        # Linear flow
+        workflow.add_edge(n_prepare, n_generate)
+        workflow.add_edge(n_generate, n_write)
+        workflow.add_edge(n_write, n_lint)
+
+        # Loop: Lint -> Fix -> Write
+        workflow.add_conditional_edges(
+            n_lint,
+            nodes.should_continue,
+            {
+                n_fix: n_fix,  # Fix code
+                n_push: n_push,  # Success -> Push
+            },
+        )
+        workflow.add_edge(n_fix, n_write)
+        workflow.add_edge(n_push, END)
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         """
@@ -225,3 +210,9 @@ class CodeGeneratorAgent:
             await self.mcp_mobile_client.__aexit__(exc_type, exc_val, exc_tb)
 
         logger.info("Agent resources released from MCP clients.")
+
+    async def run(self, initial_state: CodeGenState):
+        """Method to run the graph without calling graph.invoke outside"""
+        if not self.graph:
+            raise RuntimeError("CodeGeneratorAgent: Graph not initialized. Make sure you build the graph first.")
+        return await self.graph.ainvoke(initial_state)
