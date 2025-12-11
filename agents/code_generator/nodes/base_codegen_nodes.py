@@ -73,7 +73,7 @@ class BaseCodeGenNodes(ABC):
 
     # --- NODE 1: Prepare Repository ---
     async def prepare_repo(self, state: CodeGenState) -> dict[str, Any]:
-        branch_name = f"codegen/{self._get_component_name(state)}"
+        branch_name = f"codegen-{self.platform}/{self._get_component_name(state)}"
         scope = self._key("git")  # web_git / mobile_git
 
         try:
@@ -379,7 +379,7 @@ const styles = StyleSheet.create({
     # --- NODE 6: Push Code ---
     async def push_code(self, state: CodeGenState) -> dict[str, Any]:
         component_name = self._get_component_name(state)
-        branch_name = f"codegen/{component_name}"
+        branch_name = f"codegen-{self.platform}/{component_name}"
         scope = self._key("git")
 
         msg = f"feat({component_name}): generate {self.platform} component"
