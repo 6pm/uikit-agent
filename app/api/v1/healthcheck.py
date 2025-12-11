@@ -17,7 +17,7 @@ def read_root(request: Request):
     task = long_running_task("Test get data")
 
     return {
-        "message": "FastAPI works! Hey there!",
+        "message": "FastAPI works! Huey task started",
         "task_id": task.id,
         "status": "started",
     }
