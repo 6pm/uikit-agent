@@ -5,7 +5,7 @@ triggered by the API, managing the bridge between synchronous Huey tasks
 and the asynchronous LangGraph agent.
 """
 
-import asyncio
+import anyio
 
 from agents.code_generator.agent import CodeGeneratorAgent
 from agents.code_generator.state import CodeGenState
@@ -38,7 +38,7 @@ def code_generation_task(request_data: dict, task=None):
 
     try:
         # Huey tasks must be synchronous, but we can run async code inside
-        return asyncio.run(_async_code_generation(request_data_typed, task.id))
+        return anyio.run(_async_code_generation, request_data_typed, task.id)
 
     except Exception as e:
         error_msg = f"code_generation_task: Code generation task failed: {e}"
@@ -98,6 +98,8 @@ async def _async_code_generation(request_data: CodeGenerationRequest, task_id: s
                 "status_history": final_state.get("status_history", []),
                 "web_code": final_state.get("web_code"),
                 "mobile_code": final_state.get("mobile_code"),
+                "web_lint_errors": final_state.get("web_lint_errors"),
+                "mobile_lint_errors": final_state.get("mobile_lint_errors"),
             }
 
     except Exception as e:

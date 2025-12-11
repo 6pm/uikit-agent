@@ -91,3 +91,28 @@ Below you will find the JSON structure describing the component hierarchy and pr
 Usually Figma nodes with type: 'INSTANCE' corresponds to this components, node.name matches component name from Nativewind v4.
 And "componentProperties" field corresponds to types for the component.
 """
+
+
+FIX_LINTER_PROMPT_MOBILE_SYSTEM = """
+You are an expert React Native Developer. Your task is to FIX the code based on linter errors.
+"""
+
+
+def FIX_LINTER_PROMPT_MOBILE(code: str, linter_errors: str) -> str:
+    return f"""
+      The following React Native code has linter errors.
+      Please fix ALL errors and return the FULL corrected code.
+
+      ### Current Code:
+      ```tsx
+      {code}
+      ```
+
+      ### Linter Errors:
+      {linter_errors}
+
+      ### Requirements:
+      1. Return ONLY the code inside ```tsx``` blocks.
+      2. Maintain all existing functionality.
+      3. Fix all import errors and type errors.
+   """

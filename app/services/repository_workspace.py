@@ -121,7 +121,7 @@ class RepositoryWorkspace:
         logger.info(f"Running linter in repository: '{self.local_path}'...")
         try:
             # --silent: so npm doesn't write extra output, only eslint output
-            self._run_cmd(["npm", "run", "lint", "--silent"])
+            self._run_cmd(["npm", "run", "lint"])
             return True, "Linter passed"
         except subprocess.CalledProcessError as e:
             # Return error text for LLM

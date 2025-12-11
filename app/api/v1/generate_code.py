@@ -2,6 +2,7 @@
 
 from datetime import UTC, datetime
 
+import anyio
 import redis.asyncio as redis
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi_limiter.depends import RateLimiter
@@ -52,7 +53,10 @@ async def generate_code(
         # Huey: create task in background
         # ---------------------------------------------------------------------
         # BEST PRACTICE: Queue task immediately, don't wait
-        task = code_generation_task(request_dict)
+        def enqueue_task():
+            return code_generation_task(request_dict)
+
+        task = await anyio.to_thread.run_sync(enqueue_task)
 
         task_id = task.id
         logger.info("main: [FASTAPI]: Task queued with ID: %s", task_id)
