@@ -205,10 +205,19 @@ class CodeGeneratorAgent:
         It runs regardless of whether the block finished successfully
         or raised an exception.
         """
+        # 1. Close MCP clients connections
         if self.mcp_web_client:
             await self.mcp_web_client.__aexit__(exc_type, exc_val, exc_tb)
         if self.mcp_mobile_client:
             await self.mcp_mobile_client.__aexit__(exc_type, exc_val, exc_tb)
+
+        # 2. Close StatusReporter(Redis) connection
+        if self.status_reporter:
+            try:
+                await self.status_reporter.close()
+                logger.info("StatusReporter connection closed.")
+            except Exception as e:
+                logger.warning(f"Error closing StatusReporter: {e}")
 
         logger.info("Agent resources released from MCP clients.")
 

@@ -65,24 +65,31 @@ async def generate_code(
         # Redis Storage: Link Task to User
         # ---------------------------------------------------------------------
         try:
-            # 1. Add task ID to user's list of tasks
             user_tasks_key = f"user:{request.userId}:tasks"
-            await redis_client.rpush(user_tasks_key, task_id)
-
-            # 2. Store task metadata (ownership)
             task_meta_key = f"task:{task_id}:metadata"
-            await redis_client.hset(
-                task_meta_key,
-                mapping={
+
+            async with redis_client.pipeline(transaction=True) as pipe:
+                # 1. Add task ID to user's list of tasks
+
+                pipe.lpush(user_tasks_key, task_id)
+                pipe.expire(user_tasks_key, settings.TASK_HISTORY_TTL)
+
+                # 2. Store task metadata (ownership)
+                event_data = {
+                    "taskId": task_id,
                     "userId": request.userId,
                     "userName": request.userName,
                     "componentName": request.componentName,
                     "createdAt": datetime.now(UTC).isoformat(),
-                },
-            )
-            await redis_client.expire(task_meta_key, settings.TASK_HISTORY_TTL)
+                }
+                pipe.hset(
+                    task_meta_key,
+                    mapping=event_data,
+                )
+                pipe.expire(task_meta_key, settings.TASK_HISTORY_TTL)
+                await pipe.execute()
 
-            logger.info("main: [FASTAPI]: Saved task %s for user %s in Redis", task_id, request.userId)
+                logger.info("main: [FASTAPI]: Saved task %s for user %s in Redis", task_id, request.userId)
 
         except Exception as e:
             # Non-blocking error: if Redis save fails, we still return the task ID
