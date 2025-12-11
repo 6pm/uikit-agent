@@ -28,6 +28,9 @@ class Settings(BaseSettings):
     WEB_REPO_URL: str
     MOBILE_REPO_URL: str
 
+    # LLM model for code generation
+    MODEL_CODEGEN: str = "gemini-2.5-pro"
+
     # Pydantic will find the .env file
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

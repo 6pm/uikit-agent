@@ -90,7 +90,7 @@ async def _async_code_generation(request_data: CodeGenerationRequest, task_id: s
             logger.info("Invoking graph for task...")
 
             # Run the LangGraph workflow
-            final_state = await agent.graph.ainvoke(initial_state)
+            final_state = await agent.run(initial_state)
 
             logger.info("code_generation_task: Task completed.")
 
