@@ -75,8 +75,8 @@ class RepositoryWorkspace:
             self.local_path.mkdir(parents=True, exist_ok=True)
             self._run_cmd(["git", "clone", self.repo_url, "."], cwd=self.local_path)
 
-            # Config git user
-            self._run_cmd(["git", "config", "user.email", "agent@patrianna.com"])
+            # Config git user TODO: fix this
+            self._run_cmd(["git", "config", "user.email", "slava@patrianna.com"])
             self._run_cmd(["git", "config", "user.name", "AI Agent"])
 
             # Bootstrap dependencies
