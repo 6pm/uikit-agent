@@ -6,6 +6,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.graph import END, START, StateGraph
 
 from agents.code_generator.mcp_client import MCPClient
+from agents.code_generator.mcp_local_context import MCPLocalContextClient
 from agents.code_generator.nodes.input_validation import InputValidationNodes
 from agents.code_generator.nodes.mcp_context_retrieval import MCPContextRetrievalNode
 from agents.code_generator.nodes.mobile_nodes import MobilePipelineNodes
@@ -30,8 +31,8 @@ class CodeGeneratorAgent:
 
         # configure MCP clients
         self.mcp_web_client = MCPClient("node_modules/@patrianna/uikit/dist/mcp-server/server.js")
-        # self.mcp_mobile_client = MCPClient(f"{settings.MOBILE_REPO_PATH}/dist/mcp-server/server.js")
-        self.mcp_mobile_client = None
+        # TODO: temporary solution with local file for mobile client
+        self.mcp_mobile_client = MCPLocalContextClient(f"{settings.MOBILE_REPO_PATH}/dist/components/ui/ai-docs.json")
 
         self.task_id = task_id
 
