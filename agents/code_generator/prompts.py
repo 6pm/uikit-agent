@@ -19,6 +19,7 @@ Next.js 15 (App Router), Tailwind CSS 4 and @patrianna/uikit(fork of shadcn/ui).
 - NEVER invent props or component names.
 - NEVER add any additional wrapper divs above INSTANCE component.
 - ALWAYS add "import React from 'react'" at the top of the file.
+- ALWAYS add 'use client' directive at the top of the file.
 - ALWAYS use documented shadcn/ui props and variant properties of INSTANCE, not custom layout dimensions.
 - ALWAYS use lucide-react for icons instead of inline svg or img.
 
